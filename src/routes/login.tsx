@@ -1,71 +1,160 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Logo } from "@/components/soma/Logo";
+import { authClient } from "../lib/auth-client";
+import { Logo } from "@/components/vive/Logo";
 import { useRef, useState } from "react";
 import {
   GraduationCap, Presentation, Eye, EyeOff, Github,
-  ArrowLeft, Mail, CheckCircle,
+  ArrowLeft, Mail, CheckCircle, AlertCircle, Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign In — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Sign In — Vive AI" }] }),
   component: Login,
 });
 
 type Screen = "login" | "register" | "forgot" | "forgot-success";
 
-/* ─── Background decoration ─── */
-function BgShapes() {
+const DEMO_STUDENT = { schoolNum: "1234", studentNum: "5678", password: "demo123" };
+const DEMO_TEACHER = { schoolNum: "9876", studentNum: "5432", password: "demo123" };
+
+/* ─── Background ─── */
+function Bg() {
   return (
-    <>
-      {/* ring top-left */}
-      <div className="absolute w-24 h-24 rounded-full border-[16px] border-blue-500 top-[12%] left-[8%] rotate-45 opacity-80 drop-shadow-[0_10px_20px_rgba(37,99,235,0.5)]" />
-      {/* zigzag top-left */}
-      <div className="absolute top-[32%] left-[5%] flex flex-col gap-1 opacity-90">
-        <div className="w-14 h-5 bg-blue-200 rounded-full -rotate-45" />
-        <div className="w-14 h-5 bg-blue-300 rounded-full rotate-45 ml-5" />
-        <div className="w-14 h-5 bg-blue-400 rounded-full -rotate-45 ml-10" />
-      </div>
-      {/* wavy svg right */}
-      <div className="absolute top-[10%] right-[5%] opacity-75">
-        <svg viewBox="0 0 220 200" className="w-64 h-64 drop-shadow-[0_15px_15px_rgba(37,99,235,0.4)]">
-          <defs>
-            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#0284c7" />
-            </linearGradient>
-            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#2563eb" />
-              <stop offset="100%" stopColor="#0ea5e9" />
-            </linearGradient>
-          </defs>
-          <path d="M 10,50 Q 55,-20 100,50 T 190,50" fill="none" stroke="url(#g1)" strokeWidth="18" strokeLinecap="round" />
-          <path d="M 30,130 Q 75,55 120,130 T 210,130" fill="none" stroke="url(#g2)" strokeWidth="18" strokeLinecap="round" />
-        </svg>
-      </div>
-      {/* swirl bottom-left */}
-      <div className="absolute w-44 h-44 rounded-full border-[20px] border-transparent border-t-blue-400 border-l-blue-500 border-b-blue-600 bottom-[18%] left-[6%] -rotate-12 opacity-75 blur-[1px]" />
-      {/* blob bottom-right */}
-      <div className="absolute bottom-[6%] right-[8%] w-56 h-14 bg-gradient-to-r from-blue-400 to-blue-600 opacity-90" style={{ borderRadius: "50px 20px 80px 30px" }} />
-      {/* squiggles bottom-right */}
-      <div className="absolute bottom-[28%] right-[22%] flex flex-col gap-2 opacity-90">
-        <div className="w-12 h-3 bg-blue-300 rounded-full -rotate-12" />
-        <div className="w-12 h-3 bg-blue-400 rounded-full rotate-12 ml-4" />
-      </div>
-      {/* glowing orbs */}
-      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-sky-500/10 rounded-full blur-[100px] pointer-events-none" />
-    </>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* gradient base */}
+      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#1e3a5f 0%,#1a4a7a 40%,#0d2d4f 100%)" }} />
+      {/* glow orbs */}
+      <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full" style={{ background: "radial-gradient(circle,rgba(74,144,217,0.35) 0%,transparent 70%)" }} />
+      <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full" style={{ background: "radial-gradient(circle,rgba(91,160,227,0.2) 0%,transparent 70%)" }} />
+      {/* subtle grid */}
+      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
+      {/* decorative rings */}
+      <div className="absolute top-16 left-10 w-20 h-20 rounded-full border-4 border-sky-400/40" />
+      <div className="absolute top-28 left-24 w-8 h-8 rounded-full border-2 border-sky-300/30" />
+      <div className="absolute bottom-24 right-14 w-28 h-28 rounded-full border-4 border-blue-400/30" />
+      <div className="absolute bottom-12 right-36 w-5 h-5 rounded-full bg-sky-400/40" />
+      {/* wave shapes */}
+      <svg className="absolute bottom-0 left-0 right-0 w-full opacity-10" viewBox="0 0 1440 120" fill="none">
+        <path d="M0,80 C240,20 480,120 720,60 C960,0 1200,100 1440,50 L1440,120 L0,120 Z" fill="white" />
+      </svg>
+    </div>
   );
 }
 
-/* ─── Social buttons ─── */
-function SocialButtons() {
+/* ─── Error Banner ─── */
+function ErrorBanner({ msg }: { msg: string }) {
   return (
-    <div className="mt-7 text-center">
-      <p className="text-[11px] text-white/60 mb-4 tracking-wider uppercase">or continue with</p>
-      <div className="flex gap-4">
-        <button className="flex-1 py-3 bg-white rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 hover:shadow-md transition-all font-semibold text-sm text-gray-700">
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-500/15 border border-red-400/30 text-red-200 text-sm mb-5 animate-in slide-in-from-top duration-300">
+      <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-red-400" />
+      <span className="font-medium leading-snug">{msg}</span>
+    </div>
+  );
+}
+
+/* ─── Input Field ─── */
+function Field({
+  id, label, type = "text", placeholder, value, onChange, right, hint,
+}: {
+  id: string; label: string; type?: string; placeholder: string;
+  value: string; onChange: (v: string) => void; right?: React.ReactNode; hint?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-bold text-white/70 uppercase tracking-widest" htmlFor={id}>{label}</label>
+      <div className="relative">
+        <input
+          id={id} type={type} placeholder={placeholder}
+          className="w-full px-4 py-3.5 bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/60 focus:border-sky-400/60 font-medium transition-all backdrop-blur-sm"
+          style={{ paddingRight: right ? "3rem" : undefined }}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          autoComplete={type === "password" ? "current-password" : undefined}
+        />
+        {right && <div className="absolute right-3.5 top-1/2 -translate-y-1/2">{right}</div>}
+      </div>
+      {hint}
+    </div>
+  );
+}
+
+/* ─── Vive ID Field ─── */
+function ViveIdField({ schoolNum, studentNum, onSchoolChange, onStudentChange, studentRef }: {
+  schoolNum: string; studentNum: string;
+  onSchoolChange: (v: string) => void; onStudentChange: (v: string) => void;
+  studentRef: React.RefObject<HTMLInputElement | null>;
+}) {
+  const isValid = schoolNum.length >= 1 && studentNum.length >= 1;
+  const hasAny = schoolNum || studentNum;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-bold text-white/70 uppercase tracking-widest">Vive ID</label>
+      <div className="flex items-center bg-white/10 border border-white/20 focus-within:ring-2 focus-within:ring-sky-400/60 focus-within:border-sky-400/60 rounded-xl overflow-hidden transition-all backdrop-blur-sm">
+        <span className="bg-sky-500 text-white text-[11px] font-black tracking-widest px-3 py-[0.95rem] select-none whitespace-nowrap shrink-0">
+          VIVE
+        </span>
+        <span className="text-white/30 px-1.5 font-black text-base select-none shrink-0">—</span>
+        <input
+          type="text" inputMode="numeric" placeholder="0042" maxLength={6}
+          value={schoolNum}
+          onChange={e => onSchoolChange(e.target.value.replace(/\D/g, ""))}
+          onKeyDown={e => (e.key === "-" || e.key === "Enter") && studentRef.current?.focus()}
+          className="w-16 py-3.5 text-center text-white font-bold text-sm outline-none border-r border-white/20 bg-transparent placeholder-white/30"
+        />
+        <span className="text-white/30 px-1.5 font-black text-base select-none shrink-0">—</span>
+        <input
+          ref={studentRef} type="text" inputMode="numeric" placeholder="00291" maxLength={8}
+          value={studentNum}
+          onChange={e => onStudentChange(e.target.value.replace(/\D/g, ""))}
+          className="flex-1 py-3.5 px-2 text-white font-bold text-sm outline-none bg-transparent placeholder-white/30"
+        />
+      </div>
+      {hasAny && (
+        <p className={`text-[11px] font-mono font-semibold flex items-center gap-1 transition-colors ${isValid ? "text-green-400" : "text-white/35"}`}>
+          {isValid && <CheckCircle className="w-3 h-3" />}
+          VIVE-{schoolNum || "____"}-{studentNum || "____"}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ─── Role Tab ─── */
+function RoleTabs({ role, setRole }: { role: "student" | "teacher"; setRole: (r: "student" | "teacher") => void }) {
+  return (
+    <div className="flex bg-white/8 rounded-2xl p-1 mb-4 border border-white/10 gap-1">
+      {(["student", "teacher"] as const).map(r => (
+        <button
+          key={r} type="button" onClick={() => setRole(r)}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-200
+            ${role === r
+              ? "bg-sky-500 text-white shadow-lg shadow-sky-500/30"
+              : "text-white/50 hover:text-white/80 hover:bg-white/5"}`}
+        >
+          {r === "student" ? <GraduationCap className="w-3.5 h-3.5" /> : <Presentation className="w-3.5 h-3.5" />}
+          {r.charAt(0).toUpperCase() + r.slice(1)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Social Buttons ─── */
+function SocialButtons({ onError }: { onError: (m: string) => void }) {
+  const handleSocial = async (provider: "google" | "github") => {
+    const { error } = await authClient.signIn.social({ provider, callbackURL: "/student" });
+    if (error) onError(error.message || "Social login failed. Please try again.");
+  };
+  return (
+    <div className="mt-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex-1 h-px bg-white/10" />
+        <span className="text-[11px] text-white/40 font-semibold uppercase tracking-wider">or continue with</span>
+        <div className="flex-1 h-px bg-white/10" />
+      </div>
+      <div className="flex gap-3">
+        <button type="button" onClick={() => handleSocial("google")}
+          className="flex-1 py-3 bg-white rounded-xl flex items-center justify-center gap-2.5 hover:bg-gray-50 hover:shadow-lg transition-all font-semibold text-sm text-gray-700 active:scale-[0.98]">
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -73,8 +162,9 @@ function SocialButtons() {
           </svg>
           Google
         </button>
-        <button className="flex-1 py-3 bg-white rounded-xl flex items-center justify-center gap-2 hover:bg-gray-50 hover:shadow-md transition-all font-semibold text-sm text-gray-700">
-          <Github className="w-5 h-5 text-gray-900" />
+        <button type="button" onClick={() => handleSocial("github")}
+          className="flex-1 py-3 bg-white rounded-xl flex items-center justify-center gap-2.5 hover:bg-gray-50 hover:shadow-lg transition-all font-semibold text-sm text-gray-700 active:scale-[0.98]">
+          <Github className="w-4 h-4 text-gray-900" />
           GitHub
         </button>
       </div>
@@ -82,97 +172,44 @@ function SocialButtons() {
   );
 }
 
-/* ─── Input helper ─── */
-function Field({ id, label, type = "text", placeholder, value, onChange, right }: {
-  id: string; label: string; type?: string; placeholder: string;
-  value: string; onChange: (v: string) => void; right?: React.ReactNode;
-}) {
+/* ─── Password strength indicator ─── */
+function PwStrength({ pw }: { pw: string }) {
+  if (!pw) return null;
+  const strength = pw.length >= 12 ? 3 : pw.length >= 8 ? 2 : 1;
+  const labels = ["", "Weak", "Good", "Strong"];
+  const colors = ["", "bg-red-400", "bg-yellow-400", "bg-green-400"];
   return (
-    <div>
-      <label className="block text-xs font-semibold text-white/90 mb-2" htmlFor={id}>{label}</label>
-      <div className="relative">
-        <input
-          id={id} type={type} placeholder={placeholder}
-          className="w-full px-4 py-3 bg-white text-gray-900 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-blue-300/40 font-medium transition-all"
-          style={{ paddingRight: right ? "2.75rem" : undefined }}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-        />
-        {right && <div className="absolute right-3 top-1/2 -translate-y-1/2">{right}</div>}
+    <div className="flex items-center gap-2 mt-1.5">
+      <div className="flex gap-1 flex-1">
+        {[1, 2, 3].map(i => (
+          <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= strength ? colors[strength] : "bg-white/15"}`} />
+        ))}
       </div>
+      <span className={`text-[10px] font-bold ${strength === 3 ? "text-green-400" : strength === 2 ? "text-yellow-400" : "text-red-400"}`}>
+        {labels[strength]}
+      </span>
     </div>
   );
 }
 
-/* ─── Soma ID Field ─── */
-function SomaIdField({ schoolNum, studentNum, onSchoolChange, onStudentChange, studentRef }: {
-  schoolNum: string;
-  studentNum: string;
-  onSchoolChange: (v: string) => void;
-  onStudentChange: (v: string) => void;
-  studentRef: React.RefObject<HTMLInputElement | null>;
-}) {
-
-  const isValid = schoolNum.length >= 1 && studentNum.length >= 1;
-  const hasAny = schoolNum || studentNum;
-
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-white/90 mb-2">School ID</label>
-      <div className="flex items-center bg-white rounded-xl overflow-hidden focus-within:ring-4 focus-within:ring-blue-300/40 transition-all">
-        {/* Locked prefix */}
-        <span className="bg-blue-700 text-white text-[11px] font-black tracking-widest px-3 py-3.5 select-none whitespace-nowrap">
-          SOMA
-        </span>
-        <span className="text-slate-300 px-1 font-black text-base select-none">—</span>
-        {/* School number */}
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="0042"
-          maxLength={6}
-          value={schoolNum}
-          onChange={e => onSchoolChange(e.target.value.replace(/\D/g, ""))}
-          onKeyDown={e => (e.key === "-" || e.key === "Enter") && studentRef.current?.focus()}
-          className="w-16 py-3.5 text-center text-gray-900 font-bold text-sm outline-none border-r border-slate-200"
-        />
-        <span className="text-slate-300 px-1 font-black text-base select-none">—</span>
-        {/* Student number */}
-        <input
-          ref={studentRef}
-          type="text"
-          inputMode="numeric"
-          placeholder="00291"
-          maxLength={8}
-          value={studentNum}
-          onChange={e => onStudentChange(e.target.value.replace(/\D/g, ""))}
-          className="flex-1 py-3.5 px-2 text-gray-900 font-bold text-sm outline-none"
-        />
-      </div>
-      {hasAny && (
-        <p className={`text-[11px] mt-1.5 font-mono font-semibold flex items-center gap-1 ${isValid ? "text-green-400" : "text-white/40"}`}>
-          {isValid && <CheckCircle className="w-3 h-3" />}
-          SOMA-{schoolNum || "____"}-{studentNum || "____"}
-        </p>
-      )}
-    </div>
-  );
-}
-
+/* ═══════════════════════ MAIN LOGIN COMPONENT ═══════════════════════ */
 function Login() {
   const navigate = useNavigate();
   const [screen, setScreen] = useState<Screen>("login");
   const [role, setRole] = useState<"student" | "teacher">("student");
+  const [authError, setAuthError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Login — ID segments
+  // Login fields
   const [schoolNum, setSchoolNum] = useState("");
   const [studentNum, setStudentNum] = useState("");
   const studentRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
 
-  // Register
+  // Register fields
   const [regName, setRegName] = useState("");
+  const [regViveCode, setRegViveCode] = useState("");
   const [regSchoolNum, setRegSchoolNum] = useState("");
   const [regStudentNum, setRegStudentNum] = useState("");
   const regStudentRef = useRef<HTMLInputElement>(null);
@@ -181,248 +218,274 @@ function Login() {
   const [showRegPw, setShowRegPw] = useState(false);
   const [showRegConf, setShowRegConf] = useState(false);
 
-  // Forgot
+  // Forgot fields
   const [forgotSchoolNum, setForgotSchoolNum] = useState("");
   const [forgotStudentNum, setForgotStudentNum] = useState("");
   const forgotStudentRef = useRef<HTMLInputElement>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const goTo = (s: Screen) => { setAuthError(""); setScreen(s); };
+
+  const pwMatch = regConfirm.length > 0 && regConfirm === regPassword;
+  const pwNoMatch = regConfirm.length > 0 && regConfirm !== regPassword;
+  const regValid = !!regName && !!regViveCode && !!regSchoolNum && !!regStudentNum && regPassword.length >= 8 && pwMatch;
+
+  /* ── Handlers ── */
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
+    setLoading(true);
+
+    // Demo bypass
+    if (schoolNum === DEMO_STUDENT.schoolNum && studentNum === DEMO_STUDENT.studentNum && password === DEMO_STUDENT.password) {
+      navigate({ to: "/student" }); return;
+    }
+    if (schoolNum === DEMO_TEACHER.schoolNum && studentNum === DEMO_TEACHER.studentNum && password === DEMO_TEACHER.password) {
+      navigate({ to: "/teacher" }); return;
+    }
+
+    const email = `${schoolNum}-${studentNum}@vive.edu`;
+    const { error } = await authClient.signIn.email({ email, password });
+    setLoading(false);
+    if (error) { setAuthError(error.message || "Invalid credentials. Check your Vive ID and password."); return; }
     navigate({ to: role === "student" ? "/student" : "/teacher" });
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
+    setLoading(true);
+    const email = `${regSchoolNum}-${regStudentNum}@vive.edu`;
+    const { error } = await authClient.signUp.email({ email, password: regPassword, name: regName });
+    setLoading(false);
+    if (error) { setAuthError(error.message || "Registration failed. Please try again."); return; }
     navigate({ to: role === "student" ? "/student" : "/teacher" });
   };
 
   const handleForgot = (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
     setScreen("forgot-success");
   };
 
-  const pwMatch = regConfirm && regConfirm === regPassword;
-  const pwNoMatch = regConfirm && regConfirm !== regPassword;
+  const fillDemo = (type: "student" | "teacher") => {
+    const d = type === "student" ? DEMO_STUDENT : DEMO_TEACHER;
+    setSchoolNum(d.schoolNum);
+    setStudentNum(d.studentNum);
+    setPassword(d.password);
+    setRole(type);
+    setAuthError("");
+  };
 
-  /* ── Role Switcher (shared) ── */
-  const RoleSwitcher = () => (
-    <div className="flex bg-white/8 rounded-full p-1 mb-7 border border-white/10">
-      {(["student", "teacher"] as const).map(r => (
-        <button
-          key={r}
-          type="button"
-          onClick={() => setRole(r)}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-xs font-bold transition-all duration-300
-            ${role === r ? "bg-white/25 text-white shadow-lg" : "text-white/55 hover:text-white"}`}
-        >
-          {r === "student" ? <GraduationCap className="w-4 h-4" /> : <Presentation className="w-4 h-4" />}
-          {r.charAt(0).toUpperCase() + r.slice(1)}
-        </button>
-      ))}
-    </div>
+  /* ── Eye toggle button ── */
+  const EyeBtn = ({ show, toggle }: { show: boolean; toggle: () => void }) => (
+    <button type="button" onClick={toggle} className="text-white/40 hover:text-white/70 transition-colors" tabIndex={-1}>
+      {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+    </button>
   );
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: "linear-gradient(135deg, #02488a 0%, #00224a 50%, #001535 100%)" }}
-    >
-      <BgShapes />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <Bg />
 
-      <div className="w-full max-w-[430px] relative z-10 px-4 py-10 flex flex-col items-center">
-        {/* Card */}
-        <div className="w-full rounded-[2rem] shadow-[0_30px_70px_rgba(0,0,0,0.55)] border border-white/15 backdrop-blur-2xl bg-white/10 overflow-hidden">
+      <div className="w-full max-w-[420px] relative z-10 px-4 py-2">
 
-          {/* ════════════════ LOGIN ════════════════ */}
-          {screen === "login" && (
-            <div className="p-10">
-              <div className="flex justify-center mb-8">
-                <Link to="/" className="hover:scale-105 transition-transform">
-                  <Logo size={44} lightBg={false} />
+        {/* ══════════ LOGIN ══════════ */}
+        {screen === "login" && (
+          <div className="bg-white/8 backdrop-blur-2xl rounded-3xl border border-white/15 shadow-[0_32px_80px_rgba(0,0,0,0.5)] overflow-hidden">
+            {/* header strip */}
+            <div className="px-8 pt-5 pb-4 border-b border-white/10">
+              <div className="flex justify-center mb-3">
+                <Link to="/" className="hover:scale-105 transition-transform block">
+                  <Logo size={36} lightBg={false} />
                 </Link>
               </div>
+              <h1 className="text-2xl font-bold text-white text-center tracking-tight">Welcome back 👋</h1>
+              <p className="text-white/45 text-sm text-center mt-1">Sign in to continue your learning journey</p>
+            </div>
 
-              <h2 className="text-[1.8rem] font-bold text-white mb-1 tracking-tight">Welcome back</h2>
-              <p className="text-white/50 text-sm mb-7">Sign in to continue your journey.</p>
+            <div className="px-8 py-4">
+              {authError && <ErrorBanner msg={authError} />}
+              <RoleTabs role={role} setRole={setRole} />
 
-              <RoleSwitcher />
+              <form className="flex flex-col gap-3" onSubmit={handleLogin}>
+                <ViveIdField schoolNum={schoolNum} studentNum={studentNum}
+                  onSchoolChange={setSchoolNum} onStudentChange={setStudentNum} studentRef={studentRef} />
 
-              <form className="flex flex-col gap-5" onSubmit={handleLogin}>
-                {/* ── Segmented Soma ID ── */}
-                <SomaIdField
-                  schoolNum={schoolNum}
-                  studentNum={studentNum}
-                  onSchoolChange={setSchoolNum}
-                  onStudentChange={setStudentNum}
-                  studentRef={studentRef}
-                />
+                <Field id="login-pw" label="Password" type={showPw ? "text" : "password"}
+                  placeholder="Enter your password" value={password} onChange={setPassword}
+                  right={<EyeBtn show={showPw} toggle={() => setShowPw(v => !v)} />} />
 
-                <Field
-                  id="login-pw" label="Password" type={showPw ? "text" : "password"}
-                  placeholder="••••••••" value={password} onChange={setPassword}
-                  right={
-                    <button type="button" onClick={() => setShowPw(!showPw)} className="text-gray-400 hover:text-gray-700 transition-colors" tabIndex={-1}>
-                      {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  }
-                />
-
-                <div className="text-right -mt-2">
-                  <button type="button" onClick={() => setScreen("forgot")} className="text-[11px] text-blue-300 hover:text-white font-semibold transition-colors">
+                <div className="flex justify-end -mt-1">
+                  <button type="button" onClick={() => goTo("forgot")}
+                    className="text-[11px] text-sky-300/80 hover:text-sky-300 font-semibold transition-colors">
                     Forgot Password?
                   </button>
                 </div>
 
-                <button type="submit" className="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold text-sm transition-all shadow-xl tracking-wide">
-                  Sign In
+                <button type="submit" disabled={loading || !schoolNum || !studentNum || !password}
+                  className="w-full py-3.5 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-sky-500/30 flex items-center justify-center gap-2 active:scale-[0.98] mt-1">
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</> : "Sign In →"}
                 </button>
+
+                {/* Demo buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => fillDemo("student")}
+                    className="py-2.5 bg-white/6 border border-white/15 hover:bg-white/12 rounded-xl text-[11px] text-white/60 hover:text-white font-semibold transition-all flex items-center justify-center gap-1.5">
+                    <GraduationCap className="w-3.5 h-3.5" /> Demo Student
+                  </button>
+                  <button type="button" onClick={() => fillDemo("teacher")}
+                    className="py-2.5 bg-white/6 border border-white/15 hover:bg-white/12 rounded-xl text-[11px] text-white/60 hover:text-white font-semibold transition-all flex items-center justify-center gap-1.5">
+                    <Presentation className="w-3.5 h-3.5" /> Demo Teacher
+                  </button>
+                </div>
               </form>
 
-              <SocialButtons />
+              <SocialButtons onError={setAuthError} />
 
-              <p className="text-center text-[11px] text-white/55 mt-6">
+              <p className="text-center text-[12px] text-white/40 mt-4">
                 Don't have an account?{" "}
-                <button onClick={() => setScreen("register")} className="text-white font-bold hover:underline">
+                <button onClick={() => goTo("register")} className="text-sky-300 font-bold hover:text-white transition-colors">
                   Register for free
                 </button>
               </p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ════════════════ REGISTER ════════════════ */}
-          {screen === "register" && (
-            <div className="p-10">
-              <button
-                onClick={() => setScreen("login")}
-                className="flex items-center gap-1.5 text-white/60 hover:text-white text-xs font-semibold mb-7 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" /> Back to Login
+        {/* ══════════ REGISTER ══════════ */}
+        {screen === "register" && (
+          <div className="bg-white/8 backdrop-blur-2xl rounded-3xl border border-white/15 shadow-[0_32px_80px_rgba(0,0,0,0.5)] overflow-hidden">
+            {/* header strip */}
+            <div className="px-8 pt-8 pb-5 border-b border-white/10">
+              <button onClick={() => goTo("login")}
+                className="flex items-center gap-1.5 text-white/50 hover:text-white text-xs font-semibold mb-5 transition-colors">
+                <ArrowLeft className="w-3.5 h-3.5" /> Back to Login
               </button>
-
-              <div className="flex justify-center mb-6">
-                <Logo size={38} lightBg={false} />
+              <div className="flex justify-center mb-4">
+                <Logo size={32} lightBg={false} />
               </div>
+              <h1 className="text-2xl font-bold text-white text-center tracking-tight">Create Account ✨</h1>
+              <p className="text-white/45 text-sm text-center mt-1">Start your learning journey today</p>
+            </div>
 
-              <h2 className="text-[1.6rem] font-bold text-white mb-1 tracking-tight">Create account</h2>
-              <p className="text-white/50 text-sm mb-7">Start your learning journey today.</p>
-
-              <RoleSwitcher />
+            <div className="px-8 py-6">
+              {authError && <ErrorBanner msg={authError} />}
+              <RoleTabs role={role} setRole={setRole} />
 
               <form className="flex flex-col gap-4" onSubmit={handleRegister}>
-                <Field id="reg-name" label="Full Name" placeholder="e.g. Amara Diallo" value={regName} onChange={setRegName} />
-                <SomaIdField
-                  schoolNum={regSchoolNum}
-                  studentNum={regStudentNum}
-                  onSchoolChange={setRegSchoolNum}
-                  onStudentChange={setRegStudentNum}
-                  studentRef={regStudentRef}
-                />
-                <Field
-                  id="reg-pw" label="Password" type={showRegPw ? "text" : "password"}
-                  placeholder="Create a strong password" value={regPassword} onChange={setRegPassword}
-                  right={
-                    <button type="button" onClick={() => setShowRegPw(!showRegPw)} className="text-gray-400 hover:text-gray-700 transition-colors" tabIndex={-1}>
-                      {showRegPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  }
-                />
-                <div>
-                  <Field
-                    id="reg-conf" label="Confirm Password" type={showRegConf ? "text" : "password"}
-                    placeholder="Repeat your password" value={regConfirm} onChange={setRegConfirm}
-                    right={
-                      <button type="button" onClick={() => setShowRegConf(!showRegConf)} className="text-gray-400 hover:text-gray-700 transition-colors" tabIndex={-1}>
-                        {showRegConf ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    }
-                  />
-                  {pwNoMatch && <p className="text-red-400 text-[11px] mt-1.5 font-semibold">Passwords don't match</p>}
-                  {pwMatch && <p className="text-green-400 text-[11px] mt-1.5 font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Passwords match</p>}
+                <Field id="reg-name" label="Full Name" placeholder="e.g. Amara Diallo"
+                  value={regName} onChange={setRegName} />
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-widest">Vive Access Code</label>
+                  <div className="relative">
+                    <input id="reg-code" type="text" placeholder="Enter your 8-digit access code"
+                      className="w-full px-4 py-3.5 bg-white/10 border border-white/20 text-white placeholder-white/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/60 focus:border-sky-400/60 font-medium transition-all"
+                      value={regViveCode} onChange={e => setRegViveCode(e.target.value)} />
+                  </div>
+                  <p className="text-[10px] text-white/35 font-medium">
+                    📌 Get your code from your school, or purchase at{" "}
+                    <span className="text-sky-400">viveai.rw</span>
+                  </p>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={!!pwNoMatch}
-                  className="w-full py-3.5 bg-blue-700 hover:bg-blue-800 disabled:opacity-40 text-white rounded-xl font-bold text-sm transition-all shadow-xl tracking-wide mt-1"
-                >
-                  Create Account
+                <ViveIdField schoolNum={regSchoolNum} studentNum={regStudentNum}
+                  onSchoolChange={setRegSchoolNum} onStudentChange={setRegStudentNum} studentRef={regStudentRef} />
+
+                <Field id="reg-pw" label="Password" type={showRegPw ? "text" : "password"}
+                  placeholder="Create a strong password (min. 8 chars)" value={regPassword} onChange={setRegPassword}
+                  right={<EyeBtn show={showRegPw} toggle={() => setShowRegPw(v => !v)} />}
+                  hint={<PwStrength pw={regPassword} />} />
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-white/70 uppercase tracking-widest" htmlFor="reg-conf">Confirm Password</label>
+                  <div className="relative">
+                    <input id="reg-conf" type={showRegConf ? "text" : "password"} placeholder="Repeat your password"
+                      className={`w-full px-4 py-3.5 bg-white/10 border text-white placeholder-white/30 rounded-xl text-sm focus:outline-none focus:ring-2 font-medium transition-all pr-12
+                        ${pwNoMatch ? "border-red-400/60 focus:ring-red-400/40" : pwMatch ? "border-green-400/60 focus:ring-green-400/40" : "border-white/20 focus:ring-sky-400/60"}`}
+                      value={regConfirm} onChange={e => setRegConfirm(e.target.value)} />
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      {pwMatch && <CheckCircle className="w-4 h-4 text-green-400" />}
+                      <EyeBtn show={showRegConf} toggle={() => setShowRegConf(v => !v)} />
+                    </div>
+                  </div>
+                  {pwNoMatch && <p className="text-[11px] text-red-400 font-semibold flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Passwords don't match</p>}
+                  {pwMatch && <p className="text-[11px] text-green-400 font-semibold flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Passwords match</p>}
+                </div>
+
+                <button type="submit" disabled={loading || !regValid}
+                  className="w-full py-3.5 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-sky-500/30 flex items-center justify-center gap-2 active:scale-[0.98] mt-1">
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating account...</> : "Create Account →"}
                 </button>
               </form>
 
-              <SocialButtons />
+              <SocialButtons onError={setAuthError} />
 
-              <p className="text-center text-[11px] text-white/55 mt-6">
+              <p className="text-center text-[12px] text-white/40 mt-6">
                 Already have an account?{" "}
-                <button onClick={() => setScreen("login")} className="text-white font-bold hover:underline">Sign In</button>
+                <button onClick={() => goTo("login")} className="text-sky-300 font-bold hover:text-white transition-colors">
+                  Sign In
+                </button>
               </p>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ════════════════ FORGOT PASSWORD ════════════════ */}
-          {screen === "forgot" && (
-            <div className="p-10">
-              <button
-                onClick={() => setScreen("login")}
-                className="flex items-center gap-1.5 text-white/60 hover:text-white text-xs font-semibold mb-7 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" /> Back to Login
+        {/* ══════════ FORGOT PASSWORD ══════════ */}
+        {screen === "forgot" && (
+          <div className="bg-white/8 backdrop-blur-2xl rounded-3xl border border-white/15 shadow-[0_32px_80px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="px-8 pt-8 pb-5 border-b border-white/10">
+              <button onClick={() => goTo("login")}
+                className="flex items-center gap-1.5 text-white/50 hover:text-white text-xs font-semibold mb-5 transition-colors">
+                <ArrowLeft className="w-3.5 h-3.5" /> Back to Login
               </button>
-
-              <div className="flex justify-center mb-7">
-                <div className="w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center">
-                  <Mail className="w-8 h-8 text-blue-300" />
-                </div>
+              <div className="w-14 h-14 rounded-2xl bg-sky-400/20 border border-sky-400/30 flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-7 h-7 text-sky-300" />
               </div>
-
-              <h2 className="text-[1.6rem] font-bold text-white mb-2 tracking-tight">Forgot Password?</h2>
-              <p className="text-white/55 text-sm mb-8 leading-relaxed">
-                No worries! Enter your SOMA ID and we'll send you a link to reset your password.
+              <h1 className="text-2xl font-bold text-white text-center">Forgot Password?</h1>
+              <p className="text-white/45 text-sm text-center mt-2 leading-relaxed">
+                Enter your Vive ID and we'll send a reset link to your registered contact.
               </p>
-
+            </div>
+            <div className="px-8 py-6">
+              {authError && <ErrorBanner msg={authError} />}
               <form className="flex flex-col gap-5" onSubmit={handleForgot}>
-                <SomaIdField
-                  schoolNum={forgotSchoolNum}
-                  studentNum={forgotStudentNum}
-                  onSchoolChange={setForgotSchoolNum}
-                  onStudentChange={setForgotStudentNum}
-                  studentRef={forgotStudentRef}
-                />
-
-                <button type="submit" className="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold text-sm transition-all shadow-xl tracking-wide">
+                <ViveIdField schoolNum={forgotSchoolNum} studentNum={forgotStudentNum}
+                  onSchoolChange={setForgotSchoolNum} onStudentChange={setForgotStudentNum} studentRef={forgotStudentRef} />
+                <button type="submit" disabled={!forgotSchoolNum || !forgotStudentNum}
+                  className="w-full py-3.5 bg-sky-500 hover:bg-sky-400 disabled:opacity-40 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-sky-500/30 active:scale-[0.98]">
                   Send Reset Link
                 </button>
               </form>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ════════════════ FORGOT SUCCESS ════════════════ */}
-          {screen === "forgot-success" && (
-            <div className="p-10 flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-400/30 flex items-center justify-center mb-6 animate-fade-in">
-                <CheckCircle className="w-10 h-10 text-green-400" />
-              </div>
-
-              <h2 className="text-[1.6rem] font-bold text-white mb-3 tracking-tight">Check Your Email</h2>
-              <p className="text-white/60 text-sm leading-relaxed mb-8">
-                We sent a password reset link to <span className="text-white font-semibold">{(forgotSchoolNum || forgotStudentNum) ? `SOMA-${forgotSchoolNum || "____"}-${forgotStudentNum || "____"}` : "your SOMA ID"}</span>.
-                Check your inbox and follow the instructions.
-              </p>
-
-              <button
-                onClick={() => { setScreen("login"); setForgotSchoolNum(""); setForgotStudentNum(""); }}
-                className="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold text-sm transition-all shadow-xl tracking-wide"
-              >
-                Back to Login
-              </button>
-
-              <p className="text-[11px] text-white/40 mt-5">
-                Didn't receive it? Check your spam folder or{" "}
-                <button onClick={() => setScreen("forgot")} className="text-blue-300 hover:underline font-semibold">try again</button>
-              </p>
+        {/* ══════════ FORGOT SUCCESS ══════════ */}
+        {screen === "forgot-success" && (
+          <div className="bg-white/8 backdrop-blur-2xl rounded-3xl border border-white/15 shadow-[0_32px_80px_rgba(0,0,0,0.5)] px-8 py-12 flex flex-col items-center text-center">
+            <div className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-400/40 flex items-center justify-center mb-6">
+              <CheckCircle className="w-10 h-10 text-green-400" />
             </div>
-          )}
+            <h2 className="text-2xl font-bold text-white mb-3">Link Sent! 🎉</h2>
+            <p className="text-white/50 text-sm leading-relaxed mb-8 max-w-[280px]">
+              We sent a password reset link to the contact associated with{" "}
+              <span className="text-white font-semibold font-mono">
+                VIVE-{forgotSchoolNum || "____"}-{forgotStudentNum || "____"}
+              </span>.
+              Check your inbox.
+            </p>
+            <button onClick={() => { goTo("login"); setForgotSchoolNum(""); setForgotStudentNum(""); }}
+              className="w-full py-3.5 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-sky-500/30 active:scale-[0.98]">
+              Back to Login
+            </button>
+            <p className="text-[11px] text-white/30 mt-5">
+              Didn't receive it?{" "}
+              <button onClick={() => goTo("forgot")} className="text-sky-400 hover:text-sky-300 font-semibold">Try again</button>
+            </p>
+          </div>
+        )}
 
-        </div>
       </div>
     </div>
   );
