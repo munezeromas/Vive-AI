@@ -73,15 +73,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" },
-      { title: "Soma AI" },
-      { name: "description", content: "Soma AI is an AI-powered learning platform for African students, offering personalized support for diverse learning styles." },
-      { name: "author", content: "Soma AI" },
-      { property: "og:title", content: "Soma AI" },
-      { property: "og:description", content: "Soma AI is an AI-powered learning platform for African students, offering personalized support for diverse learning styles." },
+      { title: "Vive AI" },
+      { name: "description", content: "Vive AI is an AI-powered learning platform for African students, offering personalized support for diverse learning styles." },
+      { name: "author", content: "Vive AI" },
+      { property: "og:title", content: "Vive AI" },
+      { property: "og:description", content: "Vive AI is an AI-powered learning platform for African students, offering personalized support for diverse learning styles." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Soma AI" },
-      { name: "twitter:description", content: "Soma AI is an AI-powered learning platform for African students, offering personalized support for diverse learning styles." },
+      { name: "twitter:title", content: "Vive AI" },
+      { name: "twitter:description", content: "Vive AI is an AI-powered learning platform for African students, offering personalized support for diverse learning styles." },
     ],
     links: [
       {
