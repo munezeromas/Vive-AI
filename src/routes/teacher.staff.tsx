@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/staff")({
-  head: () => ({ meta: [{ title: "Staff Management — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Staff Management — Vive AI" }] }),
   component: StaffManagement,
 });
 

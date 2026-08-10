@@ -5,7 +5,7 @@ import { Heart, Send, Users, Sparkles, MessageSquare, TrendingUp } from "lucide-
 import { useTheme } from "@/lib/theme-context";
 
 export const Route = createFileRoute("/student/community")({
-  head: () => ({ meta: [{ title: "Community — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Community — Vive AI" }] }),
   component: Community,
 });
 

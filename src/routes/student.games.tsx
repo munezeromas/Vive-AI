@@ -2,155 +2,138 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Star, RefreshCw, Sparkles, Brain, Calculator, Type, Layers, X } from "lucide-react";
-import { useRive } from "@rive-app/react-canvas";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
 
 export const Route = createFileRoute("/student/games")({
-  head: () => ({ meta: [{ title: "Play Zone — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Play Zone — Vive AI" }] }),
   component: Games,
 });
 
-
 const ALL_RIVE_FILES = [
-  { id: "ui", title: "Game UI Sandbox", desc: "Interactive conceptual interface.", file: "10970-21511-aaa-game-ui.riv", icon: Sparkles, type: "toy" },
-  { id: "designer", title: "Designer Logic", desc: "Interactive design matrices.", file: "11058-21184-designer-in-space.riv", icon: Layers, type: "toy" },
-  { id: "memory", title: "Memory Match", desc: "Card matching game to test your memory.", file: "11229-21493-memory-game.riv", icon: Brain, type: "game" },
-  { id: "cooking", title: "Cooking Fun", desc: "Simulated cooking dynamics.", file: "1137-2229-cooking-animation.riv", icon: Layers, type: "toy" },
-  { id: "rockstar", title: "Rhythm Mechanics", desc: "Musical interaction model.", file: "12132-34408-introvert-rock-star.riv", icon: Star, type: "toy" },
-  { id: "math", title: "Math Ninja", desc: "Solve math problems quickly.", file: "13250-25048-math.riv", icon: Calculator, type: "game" },
-  { id: "pizza", title: "Pizza Fractions", desc: "Learn fractions with pizza slices.", file: "17500-32805-slice-of-pi-unlocking-the-mysteries-of-pizza-geometry.riv", icon: Calculator, type: "game" },
-  { id: "alphabet", title: "Alphabet Puzzle", desc: "Match the letters.", file: "18336-34406-monster-alphabet-puzzle.riv", icon: Type, type: "game" },
-  { id: "bubbles", title: "Pop the Bubbles", desc: "Tap the emoji bubbles before they float away.", file: "21312-40032-tap-the-emoji-bubbles-interactive-game.riv", icon: Sparkles, type: "game" },
-  { id: "shakespeare", title: "Story Time", desc: "Interactive reading book.", file: "21797-40906-my-first-shakespeare.riv", icon: Type, type: "toy" },
-  { id: "cup", title: "Guess the Cup", desc: "Follow the cup with the ball.", file: "23303-43633-guess-the-cup.riv", icon: Sparkles, type: "game" },
-  { id: "solar", title: "Solar System", desc: "Explore the planets.", file: "24331-45439-solar-system.riv", icon: Star, type: "toy" },
-  { id: "anatomy", title: "Human Body", desc: "Learn about the human body.", file: "24657-46067-medura-an-interactive-anatomy-experience.riv", icon: Brain, type: "toy" },
-  { id: "runner", title: "Space Runner", desc: "Infinite procedural runner game.", file: "26133-49002-studiorun-a-cosmic-game-by-thelittlelabs.riv", icon: Sparkles, type: "game" },
-  { id: "monster", title: "Monster Pet", desc: "Take care of your virtual monster.", file: "2742-5796-monster-game.riv", icon: Layers, type: "toy" },
-  { id: "potion", title: "Magic Potions", desc: "Mix colorful potions.", file: "4062-8437-magic-potion-to-grant-a-wish-s.riv", icon: Sparkles, type: "toy" },
-  { id: "ship", title: "Ship Captain", desc: "Steer the ship safely.", file: "4894-9900-ship-gamekit-demo.riv", icon: Sparkles, type: "game" },
+  { id: "ui",          title: "Game UI Sandbox",    desc: "Interactive conceptual interface.",             file: "10970-21511-aaa-game-ui.riv",                                               icon: Sparkles, type: "toy" },
+  { id: "designer",    title: "Designer Logic",      desc: "Interactive design matrices.",                 file: "11058-21184-designer-in-space.riv",                                         icon: Layers,   type: "toy" },
+  { id: "memory",      title: "Memory Match",        desc: "Card matching game to test your memory.",      file: "11229-21493-memory-game.riv",                                               icon: Brain,    type: "game" },
+  { id: "cooking",     title: "Cooking Fun",         desc: "Simulated cooking dynamics.",                  file: "1137-2229-cooking-animation.riv",                                           icon: Layers,   type: "toy" },
+  { id: "rockstar",    title: "Rhythm Mechanics",    desc: "Musical interaction model.",                   file: "12132-34408-introvert-rock-star.riv",                                       icon: Star,     type: "toy" },
+  { id: "math",        title: "Math Ninja",          desc: "Solve math problems quickly.",                 file: "13250-25048-math.riv",                                                      icon: Calculator, type: "game" },
+  { id: "pizza",       title: "Pizza Fractions",     desc: "Learn fractions with pizza slices.",           file: "17500-32805-slice-of-pi-unlocking-the-mysteries-of-pizza-geometry.riv",     icon: Calculator, type: "game" },
+  { id: "alphabet",    title: "Alphabet Puzzle",     desc: "Match the letters.",                           file: "18336-34406-monster-alphabet-puzzle.riv",                                   icon: Type,     type: "game" },
+  { id: "bubbles",     title: "Pop the Bubbles",     desc: "Tap the emoji bubbles before they float away.",file: "21312-40032-tap-the-emoji-bubbles-interactive-game.riv",                    icon: Sparkles, type: "game" },
+  { id: "shakespeare", title: "Story Time",          desc: "Interactive reading book.",                    file: "21797-40906-my-first-shakespeare.riv",                                      icon: Type,     type: "toy" },
+  { id: "cup",         title: "Guess the Cup",       desc: "Follow the cup with the ball.",                file: "23303-43633-guess-the-cup.riv",                                             icon: Sparkles, type: "game" },
+  { id: "solar",       title: "Solar System",        desc: "Explore the planets.",                         file: "24331-45439-solar-system.riv",                                              icon: Star,     type: "toy" },
+  { id: "anatomy",     title: "Human Body",          desc: "Learn about the human body.",                  file: "24657-46067-medura-an-interactive-anatomy-experience.riv",                  icon: Brain,    type: "toy" },
+  { id: "runner",      title: "Space Runner",        desc: "Infinite procedural runner game.",             file: "26133-49002-studiorun-a-cosmic-game-by-thelittlelabs.riv",                  icon: Sparkles, type: "game" },
+  { id: "monster",     title: "Monster Pet",         desc: "Take care of your virtual monster.",           file: "2742-5796-monster-game.riv",                                                icon: Layers,   type: "toy" },
+  { id: "potion",      title: "Magic Potions",       desc: "Mix colorful potions.",                        file: "4062-8437-magic-potion-to-grant-a-wish-s.riv",                             icon: Sparkles, type: "toy" },
+  { id: "ship",        title: "Ship Captain",        desc: "Steer the ship safely.",                       file: "4894-9900-ship-gamekit-demo.riv",                                           icon: Sparkles, type: "game" },
 ];
 
-const GAMES = ALL_RIVE_FILES.filter(g => g.type === "game").map(g => ({
-    ...g,
-    riv: `/riv-animations/${g.file}`
-}));
+const GAMES = ALL_RIVE_FILES.filter(g => g.type === "game").map(g => ({ ...g, riv: `/riv-animations/${g.file}` }));
+const TOYS  = ALL_RIVE_FILES.filter(g => g.type === "toy" ).map(g => ({ ...g, riv: `/riv-animations/${g.file}` }));
 
-const TOYS = ALL_RIVE_FILES.filter(g => g.type === "toy").map(g => ({
-    ...g,
-    riv: `/riv-animations/${g.file}`
-}));
+const CARD_COLORS = ["#4A90D9","#2ECC71","#FF9500","#9B59B6","#FF6B6B","#1ABC9C","#E74C3C","#3498DB"];
+
+function GameCard({ g, idx, color, onPlay }: { g: typeof GAMES[0]; idx: number; color: string; onPlay: () => void }) {
+  return (
+    <button
+      onClick={onPlay}
+      className="group relative text-left p-0 overflow-hidden rounded-[32px] bg-card/60 border border-white/10 hover:border-white/30 transition-all duration-500 shadow-lg hover:shadow-2xl hover:-translate-y-2 animate-in fade-in duration-300"
+      style={{ animationDelay: `${idx * 40}ms` }}
+    >
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+      {/* Thumbnail */}
+      <div className="h-36 w-full flex items-center justify-center overflow-hidden relative transition-transform duration-700 group-hover:scale-105"
+        style={{ background: `linear-gradient(135deg, ${color}20, ${color}40)` }}>
+        <RiveAnimation src={g.riv} className="w-full h-full pointer-events-none drop-shadow-2xl" />
+      </div>
+      {/* Info */}
+      <div className="p-5 relative">
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm absolute -top-5 right-5 bg-card border border-white/10" style={{ color }}>
+          <g.icon className="h-5 w-5" />
+        </div>
+        <h3 className="font-black text-base mb-1 leading-tight group-hover:text-primary transition-colors mt-2">{g.title}</h3>
+        <p className="text-xs font-semibold text-muted-foreground leading-relaxed line-clamp-2">{g.desc}</p>
+        <div className="mt-4 flex items-center gap-1.5 text-xs font-black uppercase tracking-widest" style={{ color }}>
+          Play <Sparkles className="h-3 w-3" />
+        </div>
+      </div>
+    </button>
+  );
+}
 
 function Games() {
   const [active, setActive] = useState<string | null>(null);
-  const CARD_COLORS = ["#4A90D9","#2ECC71","#FF9500","#9B59B6","#FF6B6B","#1ABC9C","#E74C3C","#3498DB"];
-  return (
-    <div className="space-y-6 max-w-7xl pb-20 relative">
 
-      <div className="card-cloud p-5 flex items-center gap-4 animate-pop-in">
-        <div className="w-12 h-12 shrink-0">
+  return (
+    <div className="space-y-8 max-w-7xl pb-20 relative">
+
+      {/* Hero banner */}
+      <div className="relative rounded-[2rem] overflow-hidden p-8 flex items-center gap-6"
+        style={{ background: "linear-gradient(135deg, #FF6B6B 0%, #FF9500 50%, #FFD93D 100%)" }}>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="relative z-10 w-20 h-20 shrink-0">
           <RiveAnimation src="/riv-animations/21312-40032-tap-the-emoji-bubbles-interactive-game.riv" className="w-full h-full" />
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-[#1A3A5C]">Play Zone</h1>
-          <p className="text-sm font-bold text-[#4A6A8A]">Fun games and interactive toys!</p>
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 border border-white/30 text-white text-xs font-black uppercase tracking-widest backdrop-blur-sm mb-2">
+            <Sparkles className="h-3.5 w-3.5" /> Vive Play Zone
+          </div>
+          <h1 className="text-4xl font-black text-white tracking-tight">Play &amp; <span className="text-yellow-200">Learn</span></h1>
+          <p className="text-white/80 font-semibold text-sm">Fun games and interactive toys to make learning exciting!</p>
         </div>
       </div>
 
       {!active ? (
-        <div className="space-y-8">
+        <div className="space-y-10">
+          {/* Games */}
           <div>
-            <h2 className="text-xl font-black text-[#1A3A5C] mb-4">Games</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
-              {GAMES.map((g, idx) => {
-                const color = CARD_COLORS[idx % CARD_COLORS.length];
-                return (
-                  <button key={g.id} onClick={() => setActive(g.id)}
-                    className="group relative text-left p-0 overflow-hidden rounded-[32px] bg-white dark:bg-slate-900 border-4 border-transparent hover:border-white/50 transition-all duration-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] hover:-translate-y-2 animate-pop-in isolate"
-                    style={{ animationDelay: `${idx * 0.04}s` }}>
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/40 to-transparent z-10 pointer-events-none" />
-                    <div className="h-36 w-full flex items-center justify-center overflow-hidden relative transition-transform duration-700 group-hover:scale-105"
-                      style={{ background: `linear-gradient(135deg, ${color}20, ${color}40)` }}>
-                      <RiveAnimation src={g.riv} className="w-full h-full pointer-events-none drop-shadow-2xl" />
-                    </div>
-                    <div className="p-5 relative z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3 shadow-sm transform -translate-y-10 absolute right-5 bg-white dark:bg-slate-800" style={{ color }}>
-                         <g.icon className="h-5 w-5" />
-                      </div>
-                      <h3 className="font-black text-lg text-slate-800 dark:text-slate-100 mb-1 leading-tight group-hover:text-primary transition-colors">{g.title}</h3>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{g.desc}</p>
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="text-xs font-black flex items-center gap-1.5 uppercase tracking-wider px-3 py-1.5 rounded-full" style={{ color, backgroundColor: `${color}15` }}>
-                          Play <Sparkles className="h-3 w-3" />
-                        </div>
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                          <Sparkles className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+            <h2 className="text-xl font-black mb-5">🎮 Games</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {GAMES.map((g, idx) => (
+                <GameCard key={g.id} g={g} idx={idx} color={CARD_COLORS[idx % CARD_COLORS.length]} onPlay={() => setActive(g.id)} />
+              ))}
             </div>
           </div>
 
+          {/* Interactive Toys */}
           <div>
-            <h2 className="text-xl font-black text-[#1A3A5C] mb-4">Interactive Toys</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
-              {TOYS.map((g, idx) => {
-                const color = CARD_COLORS[(idx + GAMES.length) % CARD_COLORS.length];
-                return (
-                  <button key={g.id} onClick={() => setActive(g.id)}
-                    className="group relative text-left p-0 overflow-hidden rounded-[32px] bg-white dark:bg-slate-900 border-4 border-transparent hover:border-white/50 transition-all duration-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] hover:-translate-y-2 animate-pop-in isolate"
-                    style={{ animationDelay: `${idx * 0.04}s` }}>
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/40 to-transparent z-10 pointer-events-none" />
-                    <div className="h-36 w-full flex items-center justify-center overflow-hidden relative transition-transform duration-700 group-hover:scale-105"
-                      style={{ background: `linear-gradient(135deg, ${color}20, ${color}40)` }}>
-                      <RiveAnimation src={g.riv} className="w-full h-full pointer-events-none drop-shadow-2xl" />
-                    </div>
-                    <div className="p-5 relative z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3 shadow-sm transform -translate-y-10 absolute right-5 bg-white dark:bg-slate-800" style={{ color }}>
-                         <g.icon className="h-5 w-5" />
-                      </div>
-                      <h3 className="font-black text-lg text-slate-800 dark:text-slate-100 mb-1 leading-tight group-hover:text-primary transition-colors">{g.title}</h3>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">{g.desc}</p>
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="text-xs font-black flex items-center gap-1.5 uppercase tracking-wider px-3 py-1.5 rounded-full" style={{ color, backgroundColor: `${color}15` }}>
-                          Interact <Sparkles className="h-3 w-3" />
-                        </div>
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                          <Layers className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+            <h2 className="text-xl font-black mb-5">🧸 Interactive Toys</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {TOYS.map((g, idx) => (
+                <GameCard key={g.id} g={g} idx={idx + GAMES.length} color={CARD_COLORS[(idx + GAMES.length) % CARD_COLORS.length]} onPlay={() => setActive(g.id)} />
+              ))}
             </div>
           </div>
         </div>
       ) : (
         <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center">
           <div className="absolute top-6 right-6 z-[110]">
-             <button onClick={() => setActive(null)}
-               className="glass bg-white/10 hover:bg-red-500/80 p-3 rounded-full text-white shadow-2xl transition-all flex items-center gap-2 border border-white/20">
-               <span className="font-black px-2 uppercase tracking-wider text-xs hidden sm:block">Close Game</span> <X className="h-6 w-6" />
-             </button>
+            <button
+              onClick={() => setActive(null)}
+              className="glass bg-white/10 hover:bg-red-500/80 p-3 rounded-full text-white shadow-2xl transition-all flex items-center gap-2 border border-white/20"
+            >
+              <span className="font-black px-2 uppercase tracking-wider text-xs hidden sm:block">Close Game</span>
+              <X className="h-6 w-6" />
+            </button>
           </div>
           <div className="w-full h-full p-4 md:p-12 relative flex items-center justify-center">
             {ALL_RIVE_FILES.find(g => g.id === active) ? (
-               <div className="w-full h-full max-w-7xl max-h-full bg-black/50 rounded-[40px] overflow-hidden shadow-[0_0_100px_rgba(255,255,255,0.1)] relative border border-white/5">
-                 <RiveAnimation src={`/riv-animations/${ALL_RIVE_FILES.find(g => g.id === active)!.file}`} className="w-full h-full" withSound stateMachines="State Machine 1" />
-               </div>
+              <div className="w-full h-full max-w-7xl max-h-full bg-black/50 rounded-[40px] overflow-hidden shadow-[0_0_100px_rgba(255,255,255,0.1)] relative border border-white/5">
+                <RiveAnimation
+                  src={`/riv-animations/${ALL_RIVE_FILES.find(g => g.id === active)!.file}`}
+                  className="w-full h-full"
+                  withSound
+                  stateMachines="State Machine 1"
+                />
+              </div>
             ) : (
-               <div className="w-full max-w-4xl max-h-full overflow-y-auto rounded-[40px] bg-background/5 p-10 shadow-2xl relative border border-white/10 text-white">
-                 {active === "math" && <MathGame />}
-                 {active === "memory" && <MemoryGame />}
-                 {active === "spell" && <SpellGame />}
-                 {active === "word" && <WordGame />}
-                 {active === "logic" && <div className="mt-8 rounded-3xl glass p-20 text-center animate-pulse"><Brain className="h-20 w-20 mx-auto text-primary opacity-20 mb-6" /><h2 className="text-3xl font-black text-white">Logic Matrix Loading...</h2><p className="text-muted-foreground font-medium mt-2 text-white/50">Initializing deductive reasoning engine.</p></div>}
-                 {active === "physics" && <div className="mt-8 rounded-3xl glass p-20 text-center animate-pulse"><Sparkles className="h-20 w-20 mx-auto text-accent opacity-20 mb-6" /><h2 className="text-3xl font-black text-white">Physics Playground Loading...</h2><p className="text-muted-foreground font-medium mt-2 text-white/50">Simulating Newtonian kinematics.</p></div>}
-               </div>
+              <div className="w-full max-w-4xl max-h-full overflow-y-auto rounded-[40px] bg-background/5 p-10 shadow-2xl relative border border-white/10 text-white">
+                {active === "math"    && <MathGame />}
+                {active === "memory"  && <MemoryGame />}
+                {active === "spell"   && <SpellGame />}
+                {active === "word"    && <WordGame />}
+              </div>
             )}
           </div>
         </div>
@@ -159,11 +142,13 @@ function Games() {
   );
 }
 
+// ── Mini-games ─────────────────────────────────────────────────────────────────
+
 function ScoreBar({ score, stars }: { score: number; stars: number }) {
   return (
     <div className="flex items-center gap-3 text-sm">
       <span className="font-bold">Score: {score}</span>
-      <span className="flex">{Array.from({length: stars}).map((_,i) => <Star key={i} className="h-4 w-4 fill-accent text-accent" />)}</span>
+      <span className="flex">{Array.from({ length: stars }).map((_, i) => <Star key={i} className="h-4 w-4 fill-accent text-accent" />)}</span>
     </div>
   );
 }

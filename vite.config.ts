@@ -19,5 +19,10 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       exclude: ["@met4citizen/talkinghead"],
     },
+    server: {
+      proxy: {
+        "/api": "http://localhost:3001",
+      },
+    },
   };
 });

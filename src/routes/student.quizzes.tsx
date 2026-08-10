@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Zap, Trophy, Star, TrendingUp, BarChart3, Award, Target } from "lucide-react";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
 import { useTheme } from "@/lib/theme-context";
 
 export const Route = createFileRoute("/student/quizzes")({
-  head: () => ({ meta: [{ title: "Quizzes — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Quizzes — Vive AI" }] }),
   component: Quizzes,
 });
 

@@ -1,18 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CLASS_STUDENTS, ASSIGNMENTS, CLASSES, STAFF_MEMBERS } from "@/lib/mock-data";
+import { CLASS_STUDENTS, ASSIGNMENTS, CLASSES, STAFF_MEMBERS, MASTERY } from "@/lib/mock-data";
 import { LIBRARY_BOOKS } from "@/lib/library-data";
 import { useTheme } from "@/lib/theme-context";
+import { geminiLessonPlan } from "@/lib/gemini-server";
+import { useState } from "react";
 import {
-  Users, AlertTriangle, TrendingUp, Activity,
+  Users, TrendingUp, Activity,
   BookOpen, Download, Sparkles, Star, Target, ShieldAlert,
-  FileText, Briefcase, GraduationCap, Clock
+  FileText, Briefcase, GraduationCap, X, Loader2, CalendarPlus, BellRing
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
 } from "recharts";
 
 export const Route = createFileRoute("/teacher/")({
-  head: () => ({ meta: [{ title: "Teacher Dashboard — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Teacher Dashboard — Vive AI" }] }),
   component: TeacherDash,
 });
 
@@ -30,13 +32,61 @@ function TeacherDash() {
   const textMuted   = isDark ? "#94A3B8" : "#64748B";
   const cardBorder  = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
+  // AI Lesson Plan state
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult]   = useState("");
+  const [aiModal, setAiModal]     = useState(false);
+
+  // Schedule & Notification Modals
+  const [scheduleModal, setScheduleModal] = useState(false);
+  const [notificationModal, setNotificationModal] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({ title: "", date: "", type: "event" });
+  const [notificationForm, setNotificationForm] = useState({ title: "", message: "" });
+
+  const handleAddSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetch('/api/teacher/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classId: 'class-1', // mock class
+          teacherId: 'teacher-1', // mock teacher
+          ...scheduleForm
+        })
+      });
+      alert('Schedule added successfully!');
+      setScheduleModal(false);
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
+  const handleSendNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetch('/api/teacher/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          classId: 'class-1', // mock class
+          ...notificationForm
+        })
+      });
+      alert('Notification sent to class successfully!');
+      setNotificationModal(false);
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
   const avg     = Math.round(CLASS_STUDENTS.reduce((s, x) => s + x.mastery, 0) / CLASS_STUDENTS.length);
   const atRisk  = CLASS_STUDENTS.filter(s => s.risk !== "low").length;
   const activeToday = 19;
   const chartData = CLASS_STUDENTS.map(s => ({ name: s.name.split(" ")[0], mastery: s.mastery }));
   const teachersGuides = LIBRARY_BOOKS.filter(b => b.type === "TG");
 
-  // Top-performing students for the "podium" cards
+  // Top students for podium
   const topStudents = [...CLASS_STUDENTS]
     .sort((a, b) => b.mastery - a.mastery)
     .slice(0, 3)
@@ -46,14 +96,40 @@ function TeacherDash() {
       color: ["from-[#10B981] to-[#059669]", "from-[#6366F1] to-[#4F46E5]", "from-[#F59E0B] to-[#D97706]"][i],
     }));
 
+  // Derived insights from data
+  const topSubject = MASTERY.reduce((a, b) => (a.value > b.value ? a : b));
+  const weakSubject = MASTERY.reduce((a, b) => (a.value < b.value ? a : b));
+
+  const handleGenerateLessonPlan = async () => {
+    setAiLoading(true);
+    setAiModal(true);
+    setAiResult("");
+    try {
+      const result = await geminiLessonPlan({
+        data: {
+          subject: weakSubject.subject,
+          grade: "P6",
+          topic: `Improving ${weakSubject.subject} comprehension`,
+          weakArea: `Students are scoring ${weakSubject.value}% on average in ${weakSubject.subject}`,
+        },
+      });
+      setAiResult(result || "No content generated. Please try again.");
+    } catch (err) {
+      setAiResult("Unable to generate lesson plan right now. Please check your connection and try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const STATS = [
-    { label: "Students",    value: CLASS_STUDENTS.length, icon: Users,          color: "#3B82F6", bg: "rgba(59,130,246,0.15)",  to: "/teacher/students" },
+    { label: "Students",    value: CLASS_STUDENTS.length, icon: Users,          color: "#5BA0E3", bg: "rgba(59,130,246,0.15)",  to: "/teacher/students" },
     { label: "Avg Mastery", value: `${avg}%`,             icon: TrendingUp,     color: "#10B981", bg: "rgba(16,185,129,0.15)",  to: "/teacher/reports" },
     { label: "At-Risk",     value: atRisk,                icon: ShieldAlert,    color: "#EF4444", bg: "rgba(239,68,68,0.15)", to: "/teacher/alerts" },
     { label: "Active Today",value: activeToday,           icon: Activity,       color: "#F59E0B", bg: "rgba(245,158,11,0.15)",  to: "/teacher/students" },
   ];
 
   return (
+    <>
     <div className="max-w-[1400px] mx-auto space-y-6 animate-fade-in main-content-padding">
 
       {/* ── HERO BANNER ── */}
@@ -117,7 +193,7 @@ function TeacherDash() {
       </div>
 
       {/* ── QUICK ACTIONS ── */}
-      <div className="rounded-[2rem] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-8 text-white relative overflow-hidden shadow-xl">
+      <div className="rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl" style={{ background: "linear-gradient(135deg, #1A3A5C 0%, #4A90D9 100%)" }}>
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/10 rounded-full filter blur-[60px]" />
         <div className="relative z-10">
           <h2 className="text-2xl font-black mb-6 flex items-center gap-2 drop-shadow-md">
@@ -148,14 +224,22 @@ function TeacherDash() {
               <p className="font-bold text-sm">Staff Management</p>
               <p className="text-xs opacity-75 mt-1">{STAFF_MEMBERS.length} members</p>
             </Link>
-            <Link
-              to="/teacher/students"
-              className="rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm p-4 transition-all hover:shadow-lg text-center cursor-pointer border border-white/20 group hover:-translate-y-1 no-underline"
+            <button
+              onClick={() => setScheduleModal(true)}
+              className="rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm p-4 transition-all hover:shadow-lg text-center cursor-pointer border border-white/20 group hover:-translate-y-1 no-underline w-full"
             >
-              <Users className="w-6 h-6 mb-2 mx-auto group-hover:scale-110 transition-transform" />
-              <p className="font-bold text-sm">View Students</p>
-              <p className="text-xs opacity-75 mt-1">{CLASS_STUDENTS.length} enrolled</p>
-            </Link>
+              <CalendarPlus className="w-6 h-6 mb-2 mx-auto group-hover:scale-110 transition-transform" />
+              <p className="font-bold text-sm">Add Schedule</p>
+              <p className="text-xs opacity-75 mt-1">Calendar Event</p>
+            </button>
+            <button
+              onClick={() => setNotificationModal(true)}
+              className="rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm p-4 transition-all hover:shadow-lg text-center cursor-pointer border border-white/20 group hover:-translate-y-1 no-underline w-full"
+            >
+              <BellRing className="w-6 h-6 mb-2 mx-auto group-hover:scale-110 transition-transform" />
+              <p className="font-bold text-sm">Send Notification</p>
+              <p className="text-xs opacity-75 mt-1">Broadcast to Class</p>
+            </button>
           </div>
         </div>
       </div>
@@ -185,8 +269,8 @@ function TeacherDash() {
                 <Bar dataKey="mastery" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
                 <defs>
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" />
-                    <stop offset="100%" stopColor="rgba(16,185,129,0.2)" />
+                    <stop offset="0%" stopColor="#4A90D9" />
+                    <stop offset="100%" stopColor="rgba(74,144,217,0.2)" />
                   </linearGradient>
                 </defs>
               </BarChart>
@@ -259,18 +343,28 @@ function TeacherDash() {
         {/* Teacher's Guides + AI Insights */}
         <div className="flex flex-col gap-6">
           
-          {/* AI Insights */}
-          <div className="rounded-[2rem] bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-800 p-6 text-white relative overflow-hidden group shadow-xl hover-glow flex-1 flex flex-col justify-center">
+          {/* AI Insights — REAL Gemini-powered */}
+          <div className="rounded-[2rem] p-6 text-white relative overflow-hidden group shadow-xl hover-glow flex-1 flex flex-col justify-center" style={{ background: "linear-gradient(135deg, #1A3A5C 0%, #4A90D9 100%)" }}>
             <div className="absolute top-[-20%] right-[-10%] w-[180px] h-[180px] bg-white/15 rounded-full filter blur-[40px] animate-pulse-glow" />
             <Sparkles className="absolute -bottom-4 -right-4 h-32 w-32 text-white/10 -rotate-12 group-hover:scale-110 transition-transform duration-500" />
-            <h3 className="text-xl font-black mb-3 relative z-10 flex items-center gap-2 drop-shadow-md">
-              <Sparkles className="h-6 w-6" /> Soma AI Insights
+            <h3 className="text-xl font-black mb-1 relative z-10 flex items-center gap-2 drop-shadow-md">
+              <Sparkles className="h-6 w-6" /> Vive AI Insights
             </h3>
+            <p className="text-xs font-black uppercase tracking-widest text-white/60 mb-3 relative z-10">Powered by Gemini AI</p>
             <p className="text-sm font-semibold opacity-90 leading-relaxed mb-6 relative z-10">
-              Your class excels in <strong className="text-yellow-300">Mathematics</strong> but struggles with <strong className="text-red-300">English comprehension</strong>. Soma AI suggests focusing on descriptive adjectives this week.
+              Your class excels in <strong className="text-yellow-300">{topSubject.subject}</strong> ({topSubject.value}%) but struggles with <strong className="text-red-300">{weakSubject.subject}</strong> ({weakSubject.value}%). Vive AI can generate a targeted lesson plan to close this gap.
             </p>
-            <button className="w-full py-3.5 rounded-xl bg-white text-indigo-700 text-xs font-black uppercase tracking-widest shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all relative z-10">
-              Generate Lesson Plan
+            <button
+              onClick={handleGenerateLessonPlan}
+              disabled={aiLoading}
+              className="w-full py-3.5 rounded-xl bg-white text-xs font-black uppercase tracking-widest shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all relative z-10 flex items-center justify-center gap-2 disabled:opacity-70"
+              style={{ color: "#1A3A5C" }}
+            >
+              {aiLoading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Generating with AI...</>
+              ) : (
+                <><Sparkles className="w-4 h-4" /> Generate Lesson Plan</>
+              )}
             </button>
           </div>
 
@@ -309,5 +403,137 @@ function TeacherDash() {
       </div>
 
     </div>
+
+      {/* ── AI LESSON PLAN MODAL ── */}
+      {aiModal && (
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setAiModal(false); }}
+        >
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-[2rem] shadow-2xl overflow-hidden"
+            style={{ background: isDark ? "#0F172A" : "#FFFFFF", border: `1px solid ${cardBorder}` }}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: cardBorder, background: "linear-gradient(135deg, #1A3A5C, #4A90D9)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-white font-black text-lg">AI Lesson Plan</h2>
+                  <p className="text-white/70 text-xs font-bold uppercase tracking-widest">Generated by Gemini · {weakSubject.subject} · P6</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAiModal(false)}
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {aiLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full border-4 border-sky-500/20 border-t-sky-500 animate-spin" />
+                    <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-sky-400" />
+                  </div>
+                  <p className="text-sm font-black uppercase tracking-widest text-sky-400 animate-pulse">Gemini is writing your lesson plan...</p>
+                </div>
+              ) : (
+                <pre
+                  className="whitespace-pre-wrap text-sm font-medium leading-relaxed"
+                  style={{ color: textPrimary, fontFamily: "Inter, sans-serif" }}
+                >
+                  {aiResult}
+                </pre>
+              )}
+            </div>
+
+            {/* Modal footer */}
+            {!aiLoading && aiResult && (
+              <div className="p-4 border-t flex gap-3 justify-end" style={{ borderColor: cardBorder }}>
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(aiResult);
+                  }}
+                  className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all hover:-translate-y-0.5"
+                  style={{ background: isDark ? "rgba(255,255,255,0.06)" : "#F1F5F9", color: textMuted }}
+                >
+                  Copy Text
+                </button>
+                <button
+                  onClick={handleGenerateLessonPlan}
+                  className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:-translate-y-0.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Regenerate
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* ── ADD SCHEDULE MODAL ── */}
+      {scheduleModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}>
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden p-6">
+             <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-black" style={{ color: textPrimary }}>Add Schedule</h2>
+                <button onClick={() => setScheduleModal(false)}><X className="w-5 h-5 text-gray-500 hover:text-red-500" /></button>
+             </div>
+             <form onSubmit={handleAddSchedule} className="space-y-4">
+                <div>
+                   <label className="block text-xs font-bold mb-1" style={{ color: textMuted }}>Title</label>
+                   <input required type="text" className="w-full border rounded-xl px-3 py-2 text-sm bg-transparent" placeholder="Event title..." value={scheduleForm.title} onChange={e => setScheduleForm({...scheduleForm, title: e.target.value})} style={{ borderColor: cardBorder, color: textPrimary }} />
+                </div>
+                <div>
+                   <label className="block text-xs font-bold mb-1" style={{ color: textMuted }}>Date</label>
+                   <input required type="date" className="w-full border rounded-xl px-3 py-2 text-sm bg-transparent" value={scheduleForm.date} onChange={e => setScheduleForm({...scheduleForm, date: e.target.value})} style={{ borderColor: cardBorder, color: textPrimary }} />
+                </div>
+                <div>
+                   <label className="block text-xs font-bold mb-1" style={{ color: textMuted }}>Type</label>
+                   <select className="w-full border rounded-xl px-3 py-2 text-sm bg-transparent" value={scheduleForm.type} onChange={e => setScheduleForm({...scheduleForm, type: e.target.value})} style={{ borderColor: cardBorder, color: textPrimary }}>
+                      <option value="event">General Event</option>
+                      <option value="exam">Exam</option>
+                      <option value="homework">Homework Due</option>
+                   </select>
+                </div>
+                <button type="submit" className="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black uppercase tracking-widest text-xs mt-4 transition-colors">
+                  Add to Calendar
+                </button>
+             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── SEND NOTIFICATION MODAL ── */}
+      {notificationModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}>
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden p-6">
+             <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-black" style={{ color: textPrimary }}>Send Notification</h2>
+                <button onClick={() => setNotificationModal(false)}><X className="w-5 h-5 text-gray-500 hover:text-red-500" /></button>
+             </div>
+             <form onSubmit={handleSendNotification} className="space-y-4">
+                <div>
+                   <label className="block text-xs font-bold mb-1" style={{ color: textMuted }}>Notification Title</label>
+                   <input required type="text" className="w-full border rounded-xl px-3 py-2 text-sm bg-transparent" placeholder="Title..." value={notificationForm.title} onChange={e => setNotificationForm({...notificationForm, title: e.target.value})} style={{ borderColor: cardBorder, color: textPrimary }} />
+                </div>
+                <div>
+                   <label className="block text-xs font-bold mb-1" style={{ color: textMuted }}>Message</label>
+                   <textarea required className="w-full border rounded-xl px-3 py-2 text-sm bg-transparent min-h-[100px]" placeholder="Type your message to the class..." value={notificationForm.message} onChange={e => setNotificationForm({...notificationForm, message: e.target.value})} style={{ borderColor: cardBorder, color: textPrimary }} />
+                </div>
+                <button type="submit" className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-xs mt-4 transition-colors">
+                  Broadcast to Class
+                </button>
+             </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -19,7 +19,7 @@ export function useTheme() {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("soma-theme") as Theme) || "light";
+      return (localStorage.getItem("vive-theme") as Theme) || "light";
     }
     return "light";
   });
@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.classList.toggle("dark", theme === "dark");
     root.setAttribute("data-theme", theme);
-    localStorage.setItem("soma-theme", theme);
+    localStorage.setItem("vive-theme", theme);
     // Update body background for night sky
     if (theme === "dark") {
       document.body.style.background = "linear-gradient(180deg, #0A1628 0%, #0D2044 40%, #1A2F6B 100%)";

@@ -4,7 +4,7 @@ import { Index } from "./index";
 export const Route = createFileRoute("/sw")({
   head: () => ({
     meta: [
-      { title: "Soma AI - Jifunze kwa urahisi" },
+      { title: "Vive AI - Jifunze kwa urahisi" },
       {
         name: "description",
         content: "Jukwaa la kujifunza linalotumia AI kwa wanafunzi.",

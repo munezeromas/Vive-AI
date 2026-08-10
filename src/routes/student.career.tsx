@@ -2,17 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Sparkles, ArrowRight, Compass, GraduationCap, Microscope, Rocket, Globe, Palette, RotateCcw, Brain, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cohereSimplify } from "@/lib/cohere-server";
+import { geminiSimplify } from "@/lib/gemini-server";
 import { useTheme } from "@/lib/theme-context";
 
 export const Route = createFileRoute("/student/career")({
-  head: () => ({ meta: [{ title: "Pathways — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Pathways — Vive AI" }] }),
   component: CareerPathExplorer,
 });
 
 const STREAMS = [
   { id: "MCB", name: "Math-Chem-Bio", icon: Microscope, color: "text-[#10B981] bg-[#10B981]/10 border-[#10B981]/20", careers: ["Doctor", "Pharmacist", "Biotechnologist"], strength: "Science & Life" },
-  { id: "MPC", name: "Math-Phys-Comp", icon: Rocket, color: "text-[#3B82F6] bg-[#3B82F6]/10 border-[#3B82F6]/20", careers: ["Engineer", "Software Developer", "Data Scientist"], strength: "Logic & Building" },
+  { id: "MPC", name: "Math-Phys-Comp", icon: Rocket, color: "text-[#5BA0E3] bg-[#5BA0E3]/10 border-[#5BA0E3]/20", careers: ["Engineer", "Software Developer", "Data Scientist"], strength: "Logic & Building" },
   { id: "PCB", name: "Phys-Chem-Bio", icon: Brain, color: "text-[#F59E0B] bg-[#F59E0B]/10 border-[#F59E0B]/20", careers: ["Medical Specialist", "Chemical Engineer", "Researcher"], strength: "Universal Sciences" },
   { id: "HEG", name: "Hist-Econ-Geog", icon: Globe, color: "text-[#8B5CF6] bg-[#8B5CF6]/10 border-[#8B5CF6]/20", careers: ["Economist", "Urban Planner", "Diplomat"], strength: "Society & Finance" },
   { id: "LEG", name: "Lit-Econ-Geog", icon: Palette, color: "text-[#EC4899] bg-[#EC4899]/10 border-[#EC4899]/20", careers: ["Journalist", "Lawyer", "International Relations"], strength: "Language & Analysis" },
@@ -71,7 +71,7 @@ function CareerPathExplorer() {
       setRecommendedStream(stream);
 
       const prompt = `A primary school student picked these interests: ${finalAnswers.join(", ")}. I recommended the High School stream "${stream.name}". Give them a very encouraging 2-sentence explanation of why this path fits them and one cool career they could have.`;
-      const res = await (cohereSimplify as any)({ data: { text: prompt, grade: "6", subject: "Career Guidance" } });
+      const res = await (geminiSimplify as any)({ data: { text: prompt, grade: "6", subject: "Career Guidance" } });
       setAiAdvice(res || "This path perfectly matches your brilliant mind! You will do amazing things in the future.");
       setStage("result");
     } catch (e) {
@@ -87,18 +87,18 @@ function CareerPathExplorer() {
       
       {stage === "intro" && (
         <div className="flex flex-col items-center justify-center py-20 gap-10 text-center relative">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full filter blur-[100px] pointer-events-none" />
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-400/10 rounded-full filter blur-[100px] pointer-events-none" />
            
            <div className="relative group z-10">
-              <div className="absolute inset-0 bg-blue-500/20 blur-[80px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
+              <div className="absolute inset-0 bg-sky-400/20 blur-[80px] rounded-full group-hover:scale-150 transition-transform duration-1000" />
               <div className="h-48 w-48 rounded-[40px] flex items-center justify-center relative pro-card glass-panel shadow-2xl">
-                 <Compass className="h-24 w-24 text-blue-500 animate-pulse-glow" />
+                 <Compass className="h-24 w-24 text-sky-400 animate-pulse-glow" />
               </div>
            </div>
            
            <div className="space-y-4 max-w-2xl relative z-10">
               <h1 className="text-5xl md:text-6xl font-black tracking-tighter" style={{ color: textPrimary }}>
-                Your <span className="text-blue-500 italic">High School</span> <br /> Path Explorer
+                Your <span className="text-sky-400 italic">High School</span> <br /> Path Explorer
               </h1>
               <p className="text-lg md:text-xl font-bold opacity-80" style={{ color: textMuted }}>
                 Discover which Rwandan subject combinations match your brilliant future!
@@ -108,7 +108,7 @@ function CareerPathExplorer() {
            <button 
               onClick={startAssessment} 
               className="relative z-10 px-10 py-5 rounded-full text-lg font-black text-white flex items-center gap-3 transition-transform hover:scale-105 shadow-[0_0_40px_rgba(59,130,246,0.4)] hover:shadow-[0_0_60px_rgba(59,130,246,0.6)]"
-              style={{ background: "linear-gradient(135deg, #3B82F6, #1D4ED8)" }}
+              style={{ background: "linear-gradient(135deg, #5BA0E3, #3B7DBF)" }}
            >
               Start Exploring <ArrowRight className="h-6 w-6" />
            </button>
@@ -129,7 +129,7 @@ function CareerPathExplorer() {
             <div className="w-full max-w-2xl text-center space-y-6">
                <div className="flex justify-center gap-2 mb-8">
                   {ASSESSMENT.map((_, i) => (
-                    <div key={i} className={`h-2 w-16 rounded-full transition-all duration-500`} style={{ background: i <= step ? "#3B82F6" : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"), boxShadow: i <= step ? "0 0 10px rgba(59,130,246,0.5)" : "none" }} />
+                    <div key={i} className={`h-2 w-16 rounded-full transition-all duration-500`} style={{ background: i <= step ? "#5BA0E3" : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"), boxShadow: i <= step ? "0 0 10px rgba(59,130,246,0.5)" : "none" }} />
                   ))}
                </div>
                <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ color: textPrimary }}>{ASSESSMENT[step].q}</h2>
@@ -142,8 +142,8 @@ function CareerPathExplorer() {
                   onClick={() => handlePick(o)}
                   className="group relative rounded-[32px] pro-card glass-panel p-10 text-left transition-all duration-500 hover:scale-[1.02] active:scale-95 overflow-hidden"
                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-500/10 rounded-full filter blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-sky-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-sky-400/10 rounded-full filter blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity" />
                     <span className="text-xl font-black transition-colors block relative z-10" style={{ color: textPrimary }}>{o}</span>
                  </button>
                ))}
@@ -155,12 +155,12 @@ function CareerPathExplorer() {
         <div className="flex flex-col items-center justify-center py-40 space-y-10">
            <div className="h-32 w-32 relative">
               <div className="absolute inset-0 border-[6px] rounded-full" style={{ borderColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" }} />
-              <div className="absolute inset-0 border-[6px] border-blue-500 border-t-transparent rounded-full animate-spin" />
-              <Brain className="absolute inset-0 m-auto h-12 w-12 text-blue-500 animate-pulse" />
+              <div className="absolute inset-0 border-[6px] border-sky-400 border-t-transparent rounded-full animate-spin" />
+              <Brain className="absolute inset-0 m-auto h-12 w-12 text-sky-400 animate-pulse" />
            </div>
            <div className="text-center">
               <p className="text-2xl font-black uppercase tracking-widest mb-2" style={{ color: textPrimary }}>Computing Neural Pathways...</p>
-              <p className="text-sm font-bold opacity-60" style={{ color: textMuted }}>Soma AI is mapping your interests to Rwandan Streams</p>
+              <p className="text-sm font-bold opacity-60" style={{ color: textMuted }}>Vive AI is mapping your interests to Rwandan Streams</p>
            </div>
         </div>
       )}
@@ -251,3 +251,4 @@ function CareerPathExplorer() {
     </div>
   );
 }
+

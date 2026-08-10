@@ -4,11 +4,11 @@ import { createPortal } from "react-dom";
 import { SUBJECTS } from "@/lib/mock-data";
 import { VIDEOS } from "@/lib/updated-videos";
 import { Play, X, Star, Search, Filter, ExternalLink, AlertTriangle } from "lucide-react";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
 import { useTheme } from "@/lib/theme-context";
 
 export const Route = createFileRoute("/student/videos")({
-  head: () => ({ meta: [{ title: "Videos — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Videos — Vive AI" }] }),
   component: Videos,
 });
 
@@ -68,7 +68,7 @@ function Videos() {
 
       {/* ── HERO HEADER ── */}
       <div className="pro-card glass-panel hover-glow p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-        <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-blue-500/20 rounded-full filter blur-[80px] animate-pulse-glow" />
+        <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-sky-400/20 rounded-full filter blur-[80px] animate-pulse-glow" />
 
         <div className="flex items-center gap-5 relative z-10">
           <div className="w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(96,165,250,0.1))", border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.06)" }}>
@@ -110,7 +110,7 @@ function Videos() {
                 onClick={() => setFilter(s)}
                 className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300"
                 style={{
-                  background: filter === s ? "#3B82F6" : "transparent",
+                  background: filter === s ? "#5BA0E3" : "transparent",
                   color: filter === s ? "#FFF" : textMuted,
                   boxShadow: filter === s ? "0 4px 12px rgba(59,130,246,0.4)" : "none",
                 }}
@@ -313,3 +313,4 @@ function Videos() {
     </div>
   );
 }
+

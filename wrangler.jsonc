@@ -1,10 +1,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "soma-ai",
+  "name": "vive-ai",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
   "vars": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "PORT": "3001"
+  },
+  "env": {
+    "development": {
+      "vars": {
+        "NODE_ENV": "development"
+      }
+    }
   }
 }
+

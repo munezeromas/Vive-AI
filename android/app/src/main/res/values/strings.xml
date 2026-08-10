@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">SomaAI</string>
-    <string name="title_activity_main">SomaAI</string>
-    <string name="package_name">com.soma.ai</string>
-    <string name="custom_url_scheme">com.soma.ai</string>
+    <string name="app_name">ViveAI</string>
+    <string name="title_activity_main">ViveAI</string>
+    <string name="package_name">com.vive.ai</string>
+    <string name="custom_url_scheme">com.vive.ai</string>
 </resources>

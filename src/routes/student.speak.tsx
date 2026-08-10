@@ -1,14 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { ArrowRight, ArrowLeft, Mic, Volume2, Edit3, BookOpen, Loader2, Play, XCircle } from "lucide-react";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
+import {
+  ArrowRight, ArrowLeft, Mic, MicOff, Volume2, Loader2,
+  CheckCircle2, XCircle, ChevronRight, BookOpen, Headphones, Repeat2, Sparkles
+} from "lucide-react";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
 import { STUDENT } from "@/lib/mock-data";
-import { cohereSimplify } from "@/lib/cohere-server";
-import { useTheme } from "@/lib/theme-context";
+import { useSession } from "@/lib/auth-client";
+import { geminiSimplify } from "@/lib/gemini-server";
 import { toast } from "sonner";
 
+
+
 export const Route = createFileRoute("/student/speak")({
-  head: () => ({ meta: [{ title: "Language Playground — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Language Playground — Vive AI" }] }),
   component: SpeakListenDashboard,
 });
 
@@ -16,123 +21,109 @@ type ModeId = "read-speak" | "listen-write" | "listen-repeat";
 
 const MODES = [
   {
-    id: "read-speak",
+    id: "read-speak" as ModeId,
     title: "Read & Speak",
-    desc: "Read the story out loud and AI will listen!",
-    emoji: "📖🗣️",
-    color: "#4A90D9",
-    bg: "rgba(74,144,217,0.1)",
+    desc: "Read the sentence aloud — Vive AI listens and checks your pronunciation!",
+    icon: BookOpen,
+    gradient: "from-sky-500 to-cyan-400",
+    glow: "rgba(14,165,233,0.3)",
     skill: "reading and speaking",
   },
   {
-    id: "listen-write",
+    id: "listen-write" as ModeId,
     title: "Listen & Write",
-    desc: "Listen to the words and write what you hear!",
-    emoji: "👂📝",
-    color: "#2ECC71",
-    bg: "rgba(46,204,113,0.1)",
+    desc: "Listen to the sentence, then type exactly what you heard.",
+    icon: Headphones,
+    gradient: "from-emerald-500 to-green-400",
+    glow: "rgba(16,185,129,0.3)",
     skill: "listening and spelling",
   },
   {
-    id: "listen-repeat",
+    id: "listen-repeat" as ModeId,
     title: "Listen & Repeat",
-    desc: "Listen to the pronunciation and repeat after it!",
-    emoji: "👂🦜",
-    color: "#FF9500",
-    bg: "rgba(255,149,0,0.1)",
+    desc: "Listen to the pronunciation and speak it back perfectly!",
+    icon: Repeat2,
+    gradient: "from-violet-500 to-purple-400",
+    glow: "rgba(139,92,246,0.3)",
     skill: "listening and pronunciation",
   },
 ];
 
-const getFriendlyMicError = (errorCode: string): { message: string, suggestion: string } => {
-  switch (errorCode) {
-    case 'not-allowed':
-      return {
-        message: "Microphone access is blocked!",
-        suggestion: "Please click the lock icon 🔒 in your browser's address bar (top-left) and set Microphone to 'Allow'. If you are on Windows, also check Windows Settings -> Privacy -> Microphone and turn on 'Allow apps to access your microphone'."
-      };
-    case 'audio-capture':
-      return {
-        message: "No microphone detected!",
-        suggestion: "Please make sure a microphone or headset is plugged in, powered on, and selected as the default input device in your computer settings."
-      };
-    case 'network':
-      return {
-        message: "Internet connection issue!",
-        suggestion: "Speech translation requires a stable internet connection in your browser. Please check your Wi-Fi or Ethernet connection and try again."
-      };
-    case 'service-not-allowed':
-      return {
-        message: "Speech service not allowed!",
-        suggestion: "Your browser or device has restricted access to the speech recognition service. Try using official Google Chrome or check system permissions."
-      };
-    case 'no-speech':
-      return {
-        message: "We didn't hear anything!",
-        suggestion: "Please speak a bit louder or check if your microphone is muted. Click the microphone button to try speaking again!"
-      };
-    default:
-      return {
-        message: `Microphone issue detected: ${errorCode}`,
-        suggestion: "Please try refreshing the page, replugging your microphone, or opening this page in a secure browser like Google Chrome."
-      };
-  }
-};
+function getFriendlyMicError(code: string): { message: string; suggestion: string } {
+  const map: Record<string, { message: string; suggestion: string }> = {
+    "not-allowed":        { message: "Microphone access is blocked!", suggestion: "Click the lock 🔒 in your address bar → set Microphone to 'Allow'. On Windows, also check Settings → Privacy → Microphone." },
+    "audio-capture":      { message: "No microphone detected!", suggestion: "Plug in a microphone or headset, make sure it is powered on and selected as the default input device." },
+    "network":            { message: "Internet connection issue!", suggestion: "Speech recognition needs a stable internet connection. Check your Wi-Fi and try again." },
+    "service-not-allowed":{ message: "Speech service not allowed!", suggestion: "Try Google Chrome for the best speech recognition support." },
+    "no-speech":          { message: "We didn't hear anything!", suggestion: "Speak louder or check your microphone. Click the mic button to try again!" },
+  };
+  return map[code] ?? { message: `Microphone issue: ${code}`, suggestion: "Try refreshing the page or using Google Chrome." };
+}
 
 function SpeakListenDashboard() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user;
+  const userLevel = user && typeof (user as any).level === 'number' ? (user as any).level : STUDENT.level;
   const [activeMode, setActiveMode] = useState<ModeId | null>(null);
-  const [practiceText, setPracticeText] = useState<string>("");
+  const [practiceText, setPracticeText] = useState("");
   const [loading, setLoading] = useState(false);
-  
   const [transcript, setTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [feedback, setFeedback] = useState<{ text: string, isSuccess: boolean } | null>(null);
+  const [feedback, setFeedback] = useState<{ text: string; isSuccess: boolean } | null>(null);
   const [userInput, setUserInput] = useState("");
-  const [micError, setMicError] = useState<{ message: string, suggestion: string } | null>(null);
-  const recognitionRef = useRef<any>(null);
-  const practiceTextRef = useRef(practiceText);
-  
-  useEffect(() => {
-     practiceTextRef.current = practiceText;
-  }, [practiceText]);
+  const [micError, setMicError] = useState<{ message: string; suggestion: string } | null>(null);
 
-  useEffect(() => {
-    return () => {
-      shouldBeRecordingRef.current = false;
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      stopDSPStream();
-    };
+  const recognitionRef        = useRef<any>(null);
+  const practiceTextRef       = useRef(practiceText);
+  const shouldBeRecordingRef  = useRef(false);
+  const accumulatedRef        = useRef("");
+  const transcriptRef         = useRef("");
+  const evaluatedRef          = useRef(false);
+  const hasSpokenRef          = useRef(false);
+  const dspStreamRef          = useRef<MediaStream | null>(null);
+  const retryCountRef         = useRef(0);
+
+  useEffect(() => { practiceTextRef.current = practiceText; }, [practiceText]);
+
+  useEffect(() => () => {
+    shouldBeRecordingRef.current = false;
+    recognitionRef.current?.stop();
+    stopDSP();
   }, []);
 
+  // ── DSP warm-up ────────────────────────────────────────────────────
+  const startDSP = async () => {
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        dspStreamRef.current = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        });
+      }
+    } catch { /* ignore */ }
+  };
+  const stopDSP = () => {
+    dspStreamRef.current?.getTracks().forEach(t => t.stop());
+    dspStreamRef.current = null;
+  };
+
+  // ── Fetch new AI sentence ──────────────────────────────────────────
   const fetchNewPractice = async (modeId: string) => {
-    const mode = MODES.find((m) => m.id === modeId);
+    const mode = MODES.find(m => m.id === modeId);
     if (!mode) return;
-    
     setLoading(true);
     setPracticeText("");
     setTranscript("");
     setFeedback(null);
     setUserInput("");
     setMicError(null);
-
     try {
-      const result = await cohereSimplify({
-        data: {
-          promptType: "language-practice",
-          grade: STUDENT.level,
-          skill: mode.skill,
-        }
+      const raw = await geminiSimplify({
+        data: { promptType: "language-practice", grade: userLevel, skill: mode.skill }
       });
-      // clean up any potential quotes or prefixes from the AI
-      const cleanText = result.replace(/^["']|["']$/g, '').replace(/Here is a sentence:|Sentence:/i, '').trim();
-      setPracticeText(cleanText);
-    } catch (err) {
-      console.error(err);
-      setPracticeText("The quick brown fox jumps over the lazy dog."); // fallback
+      const clean = raw.replace(/^["']|["']$/g, "").replace(/Here is a sentence:|Sentence:/i, "").trim();
+      setPracticeText(clean);
+    } catch {
+      setPracticeText("The quick brown fox jumps over the lazy dog.");
     } finally {
       setLoading(false);
     }
@@ -144,423 +135,357 @@ function SpeakListenDashboard() {
   };
 
   const playTTS = (text: string) => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel(); // stop any current speech
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.85; // slower, clearer for kids
-      utterance.pitch = 1.1;
-      window.speechSynthesis.speak(utterance);
-    }
+    if (!window.speechSynthesis || !text) return;
+    
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.85; u.pitch = 1.1;
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang.startsWith("en") && (v.name.includes("Premium") || v.name.includes("Google")))
+                ?? voices.find(v => v.lang.startsWith("en"));
+    if (voice) u.voice = voice;
+    window.speechSynthesis.speak(u);
   };
 
-  const transcriptRef = useRef("");
-  const evaluatedRef = useRef(false);
-  const hasSpokenRef = useRef(false);
-  const shouldBeRecordingRef = useRef(false);
-  const accumulatedTranscriptRef = useRef("");
-  const dspStreamRef = useRef<MediaStream | null>(null);
-  const retryCountRef = useRef(0);
-
-  const startDSPStream = async () => {
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          }
-        });
-        dspStreamRef.current = stream;
-        console.log("[DSP] Pre-warmed audio pipeline with Auto-Gain Control.");
-      }
-    } catch (e) {
-      console.warn("[DSP] Could not warm up hardware audio pipeline:", e);
-    }
-  };
-
-  const stopDSPStream = () => {
-    if (dspStreamRef.current) {
-      dspStreamRef.current.getTracks().forEach((track) => track.stop());
-      dspStreamRef.current = null;
-      console.log("[DSP] Released audio pipeline.");
-    }
-  };
-
+  // ── Toggle recording ──────────────────────────────────────────────
   const toggleRecording = async () => {
     if (isRecording && recognitionRef.current) {
       shouldBeRecordingRef.current = false;
       recognitionRef.current.stop();
-      stopDSPStream();
+      stopDSP();
       setIsRecording(false);
       return;
     }
 
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
-      toast.error("Your browser does not support speech recognition. Please try Chrome!", { id: "speech-support" });
+      toast.error("Your browser does not support speech recognition. Please use Chrome!", { id: "speech-support" });
       return;
     }
-    
+
     shouldBeRecordingRef.current = true;
-    accumulatedTranscriptRef.current = "";
+    accumulatedRef.current = "";
     retryCountRef.current = 0;
     setTranscript("");
     transcriptRef.current = "";
     setFeedback(null);
     setMicError(null);
     setIsRecording(true);
+    await startDSP();
 
-    // Warm up the hardware DSP pipeline for quiet/far voices
-    await startDSPStream();
-    
-    const startRecognitionSession = () => {
+    const startSession = () => {
       if (!shouldBeRecordingRef.current) return;
-
       try {
-        const recognition = new SR();
-        recognition.lang = 'en-US';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.maxAlternatives = 1;
+        const rec = new SR();
+        rec.lang = "en-US";
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.maxAlternatives = 1;
 
-        recognition.onstart = () => {
-          setIsRecording(true);
-          evaluatedRef.current = false;
-          hasSpokenRef.current = false;
-        };
-        
-        recognition.onresult = (event: any) => {
-          let currentSegment = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            currentSegment += event.results[i][0].transcript;
-          }
-          
-          const combined = (accumulatedTranscriptRef.current + " " + currentSegment).trim();
+        rec.onstart = () => { setIsRecording(true); evaluatedRef.current = false; hasSpokenRef.current = false; };
+
+        rec.onresult = (event: any) => {
+          let seg = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) seg += event.results[i][0].transcript;
+          const combined = (accumulatedRef.current + " " + seg).trim();
           setTranscript(combined);
           transcriptRef.current = combined;
           hasSpokenRef.current = true;
-          
-          const targetText = practiceTextRef.current;
-          if (targetText) {
-             const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
-             const normCombined = normalize(combined);
-             const normTarget = normalize(targetText);
-             if (normCombined === normTarget || normCombined.includes(normTarget)) {
-                evaluatedRef.current = true;
-                shouldBeRecordingRef.current = false;
-                stopDSPStream();
-                setFeedback({ text: "Correct! Amazing job! 🌟", isSuccess: true });
-                recognition.stop();
-             }
+
+          const target = practiceTextRef.current;
+          if (target) {
+            const norm = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+            if (norm(combined) === norm(target) || norm(combined).includes(norm(target))) {
+              evaluatedRef.current = true;
+              shouldBeRecordingRef.current = false;
+              stopDSP();
+              setFeedback({ text: "Correct! Amazing job! 🌟", isSuccess: true });
+              rec.stop();
+            }
           }
         };
-        
-        recognition.onerror = (e: any) => {
-          console.warn("[Speech Engine] Session Error:", e.error);
-          
-          if (e.error === 'no-speech') {
-            console.log('[Speech Engine] No speech detected, stopping restart cycle.');
-            const friendly = getFriendlyMicError(e.error);
-            setMicError(friendly);
+
+        rec.onerror = (e: any) => {
+          if (e.error === "aborted") return;
+          if (e.error === "no-speech") {
+            setMicError(getFriendlyMicError(e.error));
             shouldBeRecordingRef.current = false;
-            stopDSPStream();
+            stopDSP();
             setIsRecording(false);
             return;
           }
-
-          if (e.error === 'aborted') {
-            // Ignore intentional abort without restarting
-            return;
+          if (e.error === "network") {
+            retryCountRef.current++;
+            if (retryCountRef.current <= 5) { setTimeout(startSession, 1000); return; }
           }
-          
-          if (e.error === 'network') {
-            retryCountRef.current += 1;
-            if (retryCountRef.current <= 5) {
-              console.log(`[Speech Engine] Network glitch. Retrying segment (${retryCountRef.current}/5)...`);
-              setTimeout(() => {
-                startRecognitionSession();
-              }, 1000);
-              return;
-            } else {
-              const friendly = getFriendlyMicError(e.error);
-              setMicError(friendly);
-              toast.error(friendly.message, { id: "network-error" });
-              shouldBeRecordingRef.current = false;
-              stopDSPStream();
-              setIsRecording(false);
-            }
-            return;
-          }
-          
           const friendly = getFriendlyMicError(e.error);
           setMicError(friendly);
           toast.error(friendly.message, { id: "mic-error" });
           shouldBeRecordingRef.current = false;
-          stopDSPStream();
+          stopDSP();
           setIsRecording(false);
         };
-        
-        recognition.onend = () => {
-           if (shouldBeRecordingRef.current) {
-              // Save what we have accumulated so far
-              accumulatedTranscriptRef.current = transcriptRef.current;
-              console.log("[Speech Engine] Segment ended. Seamlessly restarting via new session...");
-              setTimeout(() => {
-                if (shouldBeRecordingRef.current) {
-                  startRecognitionSession();
-                }
-              }, 100);
-              return;
-           }
-           
-           setIsRecording(false);
-           if (evaluatedRef.current) return;
-           if (!hasSpokenRef.current && !accumulatedTranscriptRef.current) return;
-           setTimeout(() => {
-             evaluateSpeech(transcriptRef.current);
-           }, 400);
+
+        rec.onend = () => {
+          if (shouldBeRecordingRef.current) {
+            accumulatedRef.current = transcriptRef.current;
+            setTimeout(() => { if (shouldBeRecordingRef.current) startSession(); }, 100);
+            return;
+          }
+          setIsRecording(false);
+          if (evaluatedRef.current) return;
+          if (!hasSpokenRef.current && !accumulatedRef.current) return;
+          setTimeout(() => evaluateSpeech(transcriptRef.current), 400);
         };
-        
-        recognitionRef.current = recognition;
-        recognition.start();
-      } catch (err) {
-         console.error("[Speech Engine] Start failed:", err);
-         setIsRecording(false);
+
+        recognitionRef.current = rec;
+        rec.start();
+      } catch {
+        setIsRecording(false);
       }
     };
-
-    startRecognitionSession();
+    startSession();
   };
 
   const evaluateSpeech = (spoken: string) => {
     if (!practiceTextRef.current) return;
-    
-    if (!spoken || spoken.trim() === "") {
-      setFeedback({ text: "I didn't catch that! Please check your microphone settings or try speaking a bit louder.", isSuccess: false });
+    if (!spoken?.trim()) {
+      setFeedback({ text: "I didn't catch that! Please check your microphone or speak a bit louder.", isSuccess: false });
       return;
     }
-
-    const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
-    
-    const target = normalize(practiceTextRef.current);
-    const provided = normalize(spoken);
-    
-    // We already handled success during typing/speaking, this checks if we failed
-    if (provided === target || provided.includes(target) || target.includes(provided)) {
-      setFeedback({ text: "Correct! Amazing job! 🌟", isSuccess: true });
-    } else {
-      setFeedback({ text: `Almost! You said: "${spoken}". Try again!`, isSuccess: false });
-    }
-  };
-
-  const checkAnswer = (input: string) => {
-    if (!practiceText) return;
-    const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
-    
-    const target = normalize(practiceText);
-    const provided = normalize(input);
-    
-    // Evaluate fully on stop
-    if (provided === target || provided.includes(target) || target.includes(provided)) {
-      setFeedback({ text: "Correct! Amazing job! 🌟", isSuccess: true });
-    } else {
-      setFeedback({ text: `Almost! You said: "${input}". Try again!`, isSuccess: false });
-    }
+    const norm = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+    const isMatch = norm(spoken) === norm(practiceTextRef.current) ||
+                    norm(spoken).includes(norm(practiceTextRef.current)) ||
+                    norm(practiceTextRef.current).includes(norm(spoken));
+    setFeedback(isMatch
+      ? { text: "Correct! Amazing job! 🌟", isSuccess: true }
+      : { text: `Almost! You said: "${spoken}". Try again!`, isSuccess: false });
   };
 
   const checkWrittenAnswer = () => {
     if (!practiceText) return;
-    const normalize = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
-    if (normalize(userInput) === normalize(practiceText)) {
-      setFeedback({ text: "Perfect spelling! You are a star! ⭐", isSuccess: true });
-    } else {
-      setFeedback({ text: `Not quite! The correct text was: "${practiceText}". Keep trying!`, isSuccess: false });
-    }
+    const norm = (s: string) => s.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+    setFeedback(norm(userInput) === norm(practiceText)
+      ? { text: "Perfect spelling! You are a star! ⭐", isSuccess: true }
+      : { text: `Not quite! The correct text was: "${practiceText}". Keep trying!`, isSuccess: false });
   };
 
-  // ------------------- RENDER -------------------
-
+  // ─────────────────────────── ACTIVE MODE VIEW ────────────────────
   if (activeMode) {
-    const mode = MODES.find((m) => m.id === activeMode)!;
-    
+    const mode = MODES.find(m => m.id === activeMode)!;
+    const ModeIcon = mode.icon;
     return (
-      <div className="space-y-6 max-w-screen-md mx-auto px-4 py-8">
-        <button 
-          onClick={() => setActiveMode(null)}
-          className="flex items-center gap-2 text-sm font-black text-[#4A6A8A] hover:text-[#1A3A5C] transition-colors bg-white px-4 py-2 rounded-2xl w-fit shadow-sm border border-[#E2E8F0]"
+      <div className="max-w-2xl mx-auto py-8 px-4 space-y-6 animate-in fade-in duration-400">
+        <button
+          onClick={() => { setActiveMode(null); setTranscript(""); setFeedback(null); setMicError(null); }}
+          className="flex items-center gap-2 text-sm font-black text-muted-foreground hover:text-foreground transition-colors bg-card/60 border border-white/10 px-4 py-2 rounded-2xl"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Playground
         </button>
-        
-        <div className="card-cloud p-10 text-center min-h-[500px] flex flex-col items-center animate-pop-in relative overflow-hidden" style={{ borderTop: `8px solid ${mode.color}` }}>
-          
-          <div className="text-5xl mb-4 p-4 rounded-full" style={{ background: mode.bg }}>{mode.emoji}</div>
-          <h2 className={`text-3xl font-black mb-8 ${isDark ? 'text-white' : 'text-[#1A3A5C]'}`}>{mode.title}</h2>
 
+        {/* Mode header */}
+        <div className={`relative rounded-3xl overflow-hidden p-8 bg-gradient-to-br ${mode.gradient}`}
+          style={{ boxShadow: `0 20px 60px ${mode.glow}` }}>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center backdrop-blur-sm">
+              <ModeIcon className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-white/70">Language Playground</p>
+              <h1 className="text-2xl font-black text-white">{mode.title}</h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Practice card */}
+        <div className="rounded-3xl bg-card/60 border border-white/10 p-8 space-y-6 shadow-xl">
           {loading ? (
-             <div className="flex flex-col items-center justify-center flex-1">
-               <Loader2 className="w-12 h-12 text-[#4A90D9] animate-spin mb-4" />
-               <p className="text-[#4A6A8A] font-bold animate-pulse">Soma AI is writing something new just for you...</p>
-             </div>
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="h-32 w-32">
+                <RiveAnimation src="/riv-animations/27328-51630-loading-books.riv" className="w-full h-full" />
+              </div>
+              <p className="text-sm font-black uppercase tracking-widest text-primary animate-pulse">Generating sentence…</p>
+            </div>
           ) : (
-             <div className="flex flex-col items-center w-full flex-1">
-               
-               {/* Read & Speak shows the text. The others hide it initially. */}
-               {activeMode === "read-speak" ? (
-                 <div className={`w-full p-8 rounded-3xl mb-8 border-2 shadow-inner ${isDark ? 'bg-[#0B162C] border-gray-700' : 'bg-[#F8FAFC] border-[#E2E8F0]'}`}>
-                   <p className={`text-3xl font-black tracking-wide ${isDark ? 'text-white' : 'text-[#1A3A5C]'}`} style={{ fontFamily: "Comic Sans MS, OpenDyslexic, sans-serif", lineHeight: 1.6 }}>
-                     {practiceText}
-                   </p>
-                 </div>
-               ) : (
-                 <div className={`w-full p-8 rounded-3xl mb-8 border-2 shadow-inner flex flex-col items-center ${isDark ? 'bg-[#0B162C] border-gray-700' : 'bg-[#F8FAFC] border-[#E2E8F0]'}`}>
-                    <p className="text-lg font-bold text-[#4A6A8A] mb-4">Click to hear the secret sentence!</p>
-                    <button 
-                      onClick={() => playTTS(practiceText)}
-                      className="w-20 h-20 bg-gradient-to-tr from-[#4A90D9] to-[#87CEFA] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-                    >
-                      <Volume2 className="w-10 h-10" />
-                    </button>
-                 </div>
-               )}
+            <div className="space-y-6">
+              {/* The sentence */}
+              {activeMode === "read-speak" ? (
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-3">📚 Read this aloud:</p>
+                  <p className="text-2xl font-black leading-snug">{practiceText}</p>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-white/5 border border-white/10 p-6 flex flex-col items-center gap-4">
+                  <p className="text-sm font-bold text-muted-foreground">🎧 Listen, then {activeMode === "listen-write" ? "type" : "repeat"} the sentence.</p>
+                  <button
+                    onClick={() => playTTS(practiceText)}
+                    className="h-16 w-16 rounded-full bg-primary/10 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:scale-105 flex items-center justify-center"
+                  >
+                    <Volume2 className="h-8 w-8" />
+                  </button>
+                </div>
+              )}
 
-               {/* Inputs / Buttons */}
-               <div className="w-full flex flex-col items-center space-y-6">
-                 
-                 {/* Voice Recording for Speak modes */}
-                 {(activeMode === "read-speak" || activeMode === "listen-repeat") && (
-                   <div className="flex flex-col items-center w-full gap-4">
-                     {micError && (
-                       <div className="w-full p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-left animate-in fade-in duration-300">
-                         <div className="flex items-start gap-3">
-                           <XCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
-                           <div>
-                             <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-1">
-                               {micError.message}
-                             </p>
-                             <p className="text-xs font-semibold text-white/95 leading-relaxed">
-                               {micError.suggestion}
-                             </p>
-                           </div>
-                         </div>
-                       </div>
-                     )}
-                     <button 
-                       onClick={toggleRecording}
-                       disabled={feedback?.isSuccess}
-                       className={`flex items-center gap-3 px-8 py-4 rounded-full font-black text-white text-lg transition-all ${isRecording ? "bg-red-500 animate-pulse scale-105 shadow-[0_0_20px_rgba(239,68,68,0.6)]" : "bg-[#2ECC71] hover:bg-[#27AE60] shadow-md hover:scale-105"}`}
-                     >
-                       <Mic className="w-6 h-6" />
-                       {isRecording ? "Listening... Click to stop" : "Start Recording"}
-                     </button>
-                     
-                     {/* Live Transcript Display */}
-                     {transcript && (
-                       <div className={`w-full p-4 rounded-xl border border-dashed min-h-[60px] font-medium text-lg italic text-center ${isDark ? 'bg-[#0B162C] border-gray-600 text-gray-300' : 'bg-white border-[#A0AEC0] text-[#4A6A8A]'}`}>
-                         "{transcript}"
-                       </div>
-                     )}
-                   </div>
-                 )}
+              {/* Mic error */}
+              {micError && (
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 animate-in fade-in duration-300">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-1">{micError.message}</p>
+                      <p className="text-xs font-semibold leading-relaxed">{micError.suggestion}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-                 {/* Text Input for Listen & Write */}
-                 {activeMode === "listen-write" && (
-                   <div className="w-full flex flex-col gap-4">
-                     <textarea 
-                       disabled={feedback?.isSuccess}
-                       value={userInput}
-                       onChange={(e) => setUserInput(e.target.value)}
-                       placeholder="Type what you heard here..."
-                       className={`w-full p-4 rounded-2xl border-2 outline-none text-xl font-bold min-h-[120px] shadow-inner resize-none ${isDark ? 'bg-[#0B162C] border-gray-700 text-white focus:border-[#4A90D9]' : 'border-[#E2E8F0] focus:border-[#4A90D9] text-[#1A3A5C]'}`}
-                     />
-                     <button 
-                       onClick={checkWrittenAnswer}
-                       disabled={feedback?.isSuccess || !userInput.trim()}
-                       className="px-8 py-3 bg-[#4A90D9] text-white rounded-full font-black text-lg hover:bg-[#3A7BC8] transition-transform hover:scale-105 disabled:opacity-50"
-                     >
-                       Check My Spelling
-                     </button>
-                   </div>
-                 )}
+              {/* ── READ & SPEAK / LISTEN & REPEAT: mic button */}
+              {(activeMode === "read-speak" || activeMode === "listen-repeat") && !feedback?.isSuccess && (
+                <div className="flex flex-col items-center gap-4">
+                  <button
+                    onClick={toggleRecording}
+                    className={`h-20 w-20 rounded-full flex items-center justify-center transition-all shadow-xl ${
+                      isRecording
+                        ? "bg-red-500 text-white animate-pulse scale-110 shadow-[0_0_30px_rgba(239,68,68,0.5)]"
+                        : "bg-primary/10 border-2 border-primary text-primary hover:bg-primary hover:text-white hover:scale-105"
+                    }`}
+                  >
+                    {isRecording ? <MicOff className="h-9 w-9" /> : <Mic className="h-9 w-9" />}
+                  </button>
+                  {isRecording && (
+                    <p className="text-sm font-bold text-red-400 animate-pulse uppercase tracking-widest">
+                      LISTENING… SPEAK NOW!
+                    </p>
+                  )}
+                  {transcript && (
+                    <div className="w-full p-4 rounded-2xl bg-white/5 border border-white/10">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">You said:</p>
+                      <p className="text-base font-semibold italic">"{transcript}"</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
-                 {/* Feedback Display */}
-                 {feedback && (
-                   <div className={`w-full p-4 rounded-2xl border-2 animate-pop-in ${feedback.isSuccess ? 'bg-green-100 border-green-300 text-green-800' : 'bg-red-50 border-red-200 text-red-600'}`}>
-                     <p className="font-black text-lg">{feedback.text}</p>
-                   </div>
-                 )}
+              {/* ── LISTEN & WRITE: text input */}
+              {activeMode === "listen-write" && !feedback?.isSuccess && (
+                <div className="space-y-3">
+                  <textarea
+                    value={userInput}
+                    onChange={e => setUserInput(e.target.value)}
+                    placeholder="Type what you heard…"
+                    rows={3}
+                    className="w-full rounded-2xl bg-white/5 border border-white/10 p-4 text-base font-semibold focus:outline-none focus:ring-2 ring-primary/30 resize-none placeholder:text-muted-foreground/40"
+                  />
+                  <button
+                    onClick={checkWrittenAnswer}
+                    disabled={!userInput.trim()}
+                    className="w-full h-14 rounded-2xl bg-primary text-white font-black flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-40"
+                  >
+                    Check My Spelling
+                  </button>
+                </div>
+              )}
 
-                 {/* Next Button */}
-                 {feedback?.isSuccess && (
-                   <button 
-                     onClick={() => fetchNewPractice(activeMode)}
-                     className="mt-4 px-8 py-3 rounded-full font-black text-white bg-gradient-to-r from-[#FF9500] to-[#FF5E3A] flex items-center gap-2 hover:scale-105 shadow-lg animate-bounce"
-                   >
-                     Next Sentence <ArrowRight className="w-5 h-5" />
-                   </button>
-                 )}
+              {/* Feedback */}
+              {feedback && (
+                <div className={`p-5 rounded-2xl border animate-in fade-in duration-300 ${
+                  feedback.isSuccess
+                    ? "bg-emerald-500/10 border-emerald-500/25"
+                    : "bg-red-500/10 border-red-500/25"
+                }`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    {feedback.isSuccess
+                      ? <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                      : <XCircle className="h-5 w-5 text-red-400" />}
+                    <p className={`text-sm font-black uppercase tracking-widest ${
+                      feedback.isSuccess ? "text-emerald-400" : "text-red-400"
+                    }`}>
+                      {feedback.isSuccess ? "Correct! 🎉" : "Keep going! 💪"}
+                    </p>
+                  </div>
+                  <p className="text-base font-semibold">{feedback.text}</p>
+                </div>
+              )}
 
-               </div>
-             </div>
+              {/* Next sentence button */}
+              {feedback && (
+                <button
+                  onClick={() => fetchNewPractice(activeMode)}
+                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-violet-600 text-white font-black flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-[0_8px_30px_rgba(99,102,241,0.35)] animate-in zoom-in-95 duration-300"
+                >
+                  Next Sentence <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
     );
   }
 
+  // ─────────────────────────── HOME VIEW ───────────────────────────
   return (
-    <div className="space-y-8 max-w-screen-xl mx-auto px-2">
-      {/* Header */}
-      <div className="card-cloud p-8 relative overflow-hidden text-center animate-pop-in border-b-4 border-[#9B59B6]">
-        <h1 className="text-3xl sm:text-4xl font-black text-[#1A3A5C] mb-3 relative z-10">
-          Language <span style={{ color: "#9B59B6" }}>Playground</span> 🗣️
-        </h1>
-        <p className="text-base text-[#4A6A8A] font-semibold max-w-2xl mx-auto relative z-10">
-          Master your speaking, listening, and writing skills! Choose how you want to practice today.
-        </p>
+    <div className="max-w-4xl mx-auto py-8 px-4 space-y-10 animate-in fade-in duration-500">
+
+      {/* Hero */}
+      <div className="relative rounded-[2rem] overflow-hidden p-10 text-center"
+        style={{ background: "linear-gradient(135deg, #9B59B6 0%, #6366F1 50%, #3B82F6 100%)" }}>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
+        <div className="relative z-10 space-y-3">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/20 border border-white/30 text-white mb-2 backdrop-blur-sm">
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            <span className="text-xs font-black uppercase tracking-widest">Vive Language Lab</span>
+          </div>
+          <h1 className="text-5xl font-black tracking-tight text-white drop-shadow-lg">
+            Language <span className="text-yellow-300">Playground</span>
+          </h1>
+          <p className="text-white/85 font-semibold text-lg max-w-xl mx-auto">
+            Master speaking, listening, and writing — Vive AI generates brand-new sentences just for your grade every time!
+          </p>
+        </div>
       </div>
 
-      {/* Modes Grid */}
-      <div className="grid sm:grid-cols-3 gap-6">
-        {MODES.map((mode, i) => (
-          <button
-            key={mode.id}
-            onClick={() => handleStartMode(mode.id as ModeId)}
-            className="card-cloud flex flex-col items-center text-center p-8 transition-all hover:-translate-y-2 hover:shadow-2xl animate-pop-in group border-2 border-transparent hover:border-gray-100"
-            style={{ animationDelay: `${i * 0.1}s` }}
-          >
-            <div 
-              className="w-24 h-24 rounded-full flex items-center justify-center mb-6 transition-transform group-hover:scale-110 shadow-inner"
-              style={{ background: mode.bg, border: `2px solid ${mode.color}40` }}
+      {/* Mode cards */}
+      <div className="grid sm:grid-cols-3 gap-5">
+        {MODES.map((mode) => {
+          const ModeIcon = mode.icon;
+          return (
+            <button
+              key={mode.id}
+              onClick={() => handleStartMode(mode.id)}
+              className="group rounded-3xl bg-card/60 border border-white/10 p-7 text-left hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 shadow-lg hover:shadow-xl flex flex-col gap-5 relative overflow-hidden"
             >
-              <span className="text-4xl">{mode.emoji}</span>
-            </div>
-            <h3 className="text-2xl font-black mb-3 text-[#1A3A5C]">{mode.title}</h3>
-            <p className="text-sm font-semibold text-[#4A6A8A] leading-relaxed mb-8 flex-1">
-              {mode.desc}
-            </p>
-            <div 
-              className="px-6 py-3 rounded-full text-sm font-black text-white w-full flex items-center justify-center gap-2 transition-transform group-hover:scale-105 shadow-md"
-              style={{ background: mode.color }}
-            >
-              Choose <ArrowRight className="w-4 h-4" />
-            </div>
-          </button>
-        ))}
+              {/* gradient top strip */}
+              <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${mode.gradient}`} />
+              <div
+                className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${mode.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+              >
+                <ModeIcon className="h-7 w-7 text-white" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <h3 className="text-lg font-black">{mode.title}</h3>
+                <p className="text-sm font-semibold text-muted-foreground leading-relaxed">{mode.desc}</p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary">
+                Start Practice <ChevronRight className="h-3.5 w-3.5" />
+              </div>
+            </button>
+          );
+        })}
       </div>
-      
-      {/* Bot companion */}
-      <div className="card-cloud p-6 flex flex-col sm:flex-row items-center gap-6 animate-pop-in mt-8 border-2 border-[#4A90D9]/20" style={{ background: "rgba(74,144,217,0.05)" }}>
-         <div className="w-32 h-32 shrink-0">
-             <RiveAnimation src="/riv-animations/22673-42423-for-education-purpose.riv" className="w-full h-full" />
-         </div>
-         <div>
-            <h3 className="text-xl font-black text-[#1A3A5C] mb-2 flex items-center gap-2">Practice Makes Perfect! ⭐</h3>
-            <p className="text-sm font-semibold text-[#4A6A8A] leading-relaxed max-w-3xl">
-              Soma AI generates completely new sentences every time based on your grade! It's here to listen to your pronunciation, check your spelling, and help you become a fluent speaker. Don't be afraid to make mistakes—that's how we learn!
-            </p>
-         </div>
+
+      {/* Bot companion card */}
+      <div className="rounded-3xl bg-card/60 border border-white/10 p-6 flex flex-col sm:flex-row items-center gap-6 shadow-lg">
+        <div className="w-28 h-28 shrink-0">
+          <RiveAnimation src="/riv-animations/22673-42423-for-education-purpose.riv" className="w-full h-full" />
+        </div>
+        <div className="space-y-1 text-center sm:text-left">
+          <h3 className="text-lg font-black">Practice Makes Perfect! ⭐</h3>
+          <p className="text-sm font-semibold text-muted-foreground leading-relaxed max-w-2xl">
+            Vive AI generates completely new sentences based on your grade every time you practice. It listens to your pronunciation, checks your spelling, and helps you become a confident speaker. Don't be afraid to make mistakes — that's how we grow!
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus, X, Bell, CheckCircle, BookOpen, Award } from "lucide-react";
 
 export const Route = createFileRoute("/student/planner")({
-  head: () => ({ meta: [{ title: "Study Planner — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Study Planner — Vive AI" }] }),
   component: Planner,
 });
 
@@ -50,12 +50,12 @@ function ymd(y: number, m: number, d: number) {
 function usePersistEvents() {
   const [events, setEvents] = useState<CalEvent[]>(() => {
     try {
-      const saved = localStorage.getItem("soma_cal_events");
+      const saved = localStorage.getItem("vive_cal_events");
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
   useEffect(() => {
-    localStorage.setItem("soma_cal_events", JSON.stringify(events));
+    localStorage.setItem("vive_cal_events", JSON.stringify(events));
   }, [events]);
   return [events, setEvents] as const;
 }

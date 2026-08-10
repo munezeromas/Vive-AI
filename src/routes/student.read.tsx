@@ -1,29 +1,34 @@
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { 
   ChevronLeft, 
   ChevronRight,
   Volume2, 
   Brain, 
-  Settings, 
-  Type, 
-  Maximize2, 
-  Minimize2,
   ZoomIn,
   ZoomOut,
   Sparkles,
-  Pause,
-  Play
+  Download
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { z } from "zod";
-import { cohereSimplify } from "@/lib/cohere-server";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
-import { TalkingRobot } from "@/components/soma/TalkingRobot";
+import { geminiSimplify } from "@/lib/gemini-server";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
+import { AIStudyAssistant } from "@/components/vive/AIStudyAssistant";
 import { lazy, Suspense } from "react";
 
-const PDFViewer = lazy(() => import("@/components/soma/PDFViewer"));
+const PDFViewer = lazy(() => import("@/components/vive/PDFViewer"));
+
+const isEnglishText = (text: string): boolean => {
+  if (!text) return false;
+  const commonEnglish = /\b(the|be|to|of|and|a|in|that|have|i|it|for|not|on|with|he|as|you|do|at|this|but|his|by|from|they|we|say|her|she|or|an|will|my|one|all|would|there|their|what|so|up|out|if|about|who|get|which|go|me|when|make|can|like|time|no|just|him|know|take|people|into|year|your|good|some|could|them|see|other|than|then|now|look|only|come|its|over|think|also|back|after|use|two|how|our|work|first|well|way|even|new|want|because|any|these|give|day|most|us|is|am|are|was|were|has|had|do|does|did|hello|yes|no|hi|ok|okay|welcome|study|learn|teacher|tutor|student)\b/i;
+  const commonKinyarwanda = /\b(amahoro|amakuru|yego|oya|muraho|bite|neza|murakoze|nshuti|umwana|abana|igitabo|ishuri|umwarimu|gukora|gusoma|kwiga|niba|ariko|kuko|ni|na|ko|mu|ku|za|wa|ba|ya|yo|ndagukunda|mwaramutse|isi|umuriro|amazi|kugira|kora)\b/i;
+  const hasEnglish = commonEnglish.test(text);
+  const hasKinyarwanda = commonKinyarwanda.test(text);
+  if (hasKinyarwanda && !hasEnglish) return false;
+  return hasEnglish;
+};
 
 const searchSchema = z.object({
   file: z.string(),
@@ -52,6 +57,24 @@ function Reader() {
     setIsClient(true);
   }, []);
 
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(file);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = title.endsWith(".pdf") ? title : `${title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Failed to download file:", e);
+      alert("Failed to download file for offline reading.");
+    }
+  };
+
   // Only get what the student actually highlighted — NO clipboard fallback
   const getActiveText = () => {
     // 1. Prefer whatever is live-selected RIGHT NOW in the window
@@ -69,7 +92,7 @@ function Reader() {
     return "";
   };
 
-  // Real Cohere Simplification via Server Function
+  // Real Gemini Simplification via Server Function
   const simplifyText = async () => {
     const textToSimplify = getActiveText();
     
@@ -91,13 +114,13 @@ function Reader() {
         : title.includes("Science") ? "Science"
         : "General";
       
-      const text = await cohereSimplify({ 
+      const text = await geminiSimplify({ 
         data: { text: textToSimplify, grade, subject }
       });
       
       setSimplifiedText(text || "I couldn't simplify that right now. Try selecting a different word!");
     } catch (error) {
-      console.error("Cohere Error:", error);
+      console.error("Gemini Error:", error);
       setSimplifiedText("Sorry, I'm having trouble right now. Please try again in a moment!");
     } finally {
       setIsSimplifying(false);
@@ -128,6 +151,12 @@ function Reader() {
   const speak = (text: string) => {
     if (!window.speechSynthesis) {
       alert("Your browser does not support text-to-speech.");
+      return;
+    }
+
+    if (!isEnglishText(text)) {
+      console.log("[AI Reader] Non-English text detected, muting audio:", text);
+      window.speechSynthesis.cancel();
       return;
     }
     
@@ -205,7 +234,7 @@ function Reader() {
           </Link>
           <div>
             <h2 className="text-sm font-black text-white uppercase tracking-tight truncate max-w-[200px]">{title}</h2>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Soma AI Reader</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Vive AI Reader</p>
           </div>
         </div>
 
@@ -231,6 +260,7 @@ function Reader() {
           <div className="w-px h-6 bg-white/10" />
 
           <div className="flex items-center gap-2">
+            <button onClick={handleDownload} className="p-2 rounded-xl border border-white/5 hover:bg-white/5 text-white/60 hover:text-white transition-all" title="Download for Offline Reading"><Download className="h-4 w-4" /></button>
             <button onClick={() => setFontSize(s => Math.min(s + 2, 32))} className="p-2 rounded-xl border border-white/5 hover:bg-white/5 text-white/60 hover:text-white transition-all"><ZoomIn className="h-4 w-4" /></button>
             <button onClick={() => setFontSize(s => Math.max(s - 2, 12))} className="p-2 rounded-xl border border-white/5 hover:bg-white/5 text-white/60 hover:text-white transition-all"><ZoomOut className="h-4 w-4" /></button>
             <div className="w-px h-4 bg-white/10 mx-1" />
@@ -257,6 +287,15 @@ function Reader() {
               }>
                 <PDFViewer file={file} page={page} fontSize={fontSize} onTotalPages={setNumPages} onPageChange={setPage} />
               </Suspense>
+            ) : (file.toLowerCase().endsWith('.docx') || file.toLowerCase().endsWith('.doc') || file.toLowerCase().endsWith('.pptx') || file.toLowerCase().endsWith('.ppt')) ? (
+              <div className="w-full h-[80vh] bg-white shadow-2xl rounded-2xl overflow-hidden">
+                <iframe 
+                  key={file}
+                  src={`https://docs.google.com/gview?url=${encodeURIComponent(file)}&embedded=true`} 
+                  className="w-full h-full border-none"
+                  title={title}
+                />
+              </div>
             ) : (
               <div className="w-full h-[80vh] bg-white shadow-2xl rounded-2xl overflow-hidden">
                 <iframe 
@@ -289,7 +328,7 @@ function Reader() {
           <aside className="w-96 border-l border-white/5 bg-[#0A1020]/50 backdrop-blur-xl p-8 overflow-y-auto animate-in slide-in-from-right duration-500">
             <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              Soma AI Assistant
+              Vive AI Assistant
             </h3>
             
             {simplifiedText ? (
@@ -344,6 +383,8 @@ function Reader() {
           </aside>
         )}
       </div>
+
+      <AIStudyAssistant documentContext={title ? `Reading document: ${title}\nURL: ${file}` : "Reading materials"} />
     </div>
   );
 }

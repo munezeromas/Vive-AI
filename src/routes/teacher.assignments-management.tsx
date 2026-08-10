@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/assignments-management")({
-  head: () => ({ meta: [{ title: "Assignments — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Assignments — Vive AI" }] }),
   component: AssignmentsManagement,
 });
 
@@ -65,7 +65,7 @@ function AssignmentsManagement() {
         </div>
         <div className="rounded-xl border bg-card p-4 hover:shadow-md transition-shadow">
           <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">Active</p>
-          <p className="text-3xl font-bold text-blue-600">{assignments.filter(a => a.status === "active").length}</p>
+          <p className="text-3xl font-bold text-sky-500">{assignments.filter(a => a.status === "active").length}</p>
         </div>
         <div className="rounded-xl border bg-card p-4 hover:shadow-md transition-shadow">
           <p className="text-xs font-semibold uppercase text-muted-foreground mb-1">Pending Review</p>
@@ -164,7 +164,7 @@ function AssignmentsManagement() {
             {filtered.map(a => {
               const progressPct = a.students > 0 ? Math.round((a.submitted / a.students) * 100) : 0;
               const statusColors = {
-                active: "bg-blue-500/10 text-blue-700 border border-blue-200",
+                active: "bg-sky-400/10 text-sky-600 border border-blue-200",
                 pending_review: "bg-yellow-500/10 text-yellow-700 border border-yellow-200",
                 completed: "bg-green-500/10 text-green-700 border border-green-200"
               };
@@ -189,7 +189,7 @@ function AssignmentsManagement() {
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground mb-1">Submission Progress</p>
                       <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: `${progressPct}%` }} />
+                        <div className="h-full bg-gradient-to-r from-sky-400 to-cyan-500" style={{ width: `${progressPct}%` }} />
                       </div>
                       <p className="text-xs mt-1">{a.submitted} of {a.students} submitted ({progressPct}%)</p>
                     </div>
@@ -223,3 +223,4 @@ function AssignmentsManagement() {
     </div>
   );
 }
+

@@ -1,9 +1,10 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { AccessibilityBar } from "./AccessibilityBar";
+import { useSession, signOut } from "@/lib/auth-client";
 import {
   Home, Users, AlertTriangle, ClipboardList, BarChart3,
-  LogOut, Menu, Bell, ChevronDown, ChevronRight, Settings,
+  LogOut, Menu, Bell, ChevronDown, ChevronRight, Settings, MessageSquare, BookOpen
 } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { Drawer } from "vaul";
@@ -13,7 +14,9 @@ const NAV = [
   { to: "/teacher/students",    label: "Students",     icon: Users },
   { to: "/teacher/alerts",      label: "Alerts",       icon: AlertTriangle },
   { to: "/teacher/assignments", label: "Assignments",  icon: ClipboardList },
+  { to: "/teacher/materials",   label: "Materials",    icon: BookOpen },
   { to: "/teacher/reports",     label: "Reports",      icon: BarChart3 },
+  { to: "/teacher/messages",    label: "Messages",     icon: MessageSquare },
 ];
 
 const TEACHER = {
@@ -25,6 +28,28 @@ const TEACHER = {
 
 export function TeacherLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user;
+  if (!user) return null;
+
+  const displayName = user.name;
+  const displayGrade = user.schoolId || user.email;
+
+  const getInitials = (nameStr: string) => {
+    const parts = nameStr.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0].slice(0, 2).toUpperCase();
+  };
+  const initials = getInitials(displayName);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
+
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
@@ -91,17 +116,17 @@ export function TeacherLayout() {
           <button className="flex items-center gap-2 hover:opacity-80 transition-opacity p-1 rounded-2xl" style={{ background: isDark ? "transparent" : "transparent" }}>
             <div className="hidden sm:block text-right mr-1">
               <p className="text-sm font-black leading-none" style={{ color: isDark ? "#F8FAFC" : "#0F172A" }}>
-                {TEACHER.name}
+                {displayName}
               </p>
               <p className="text-[10px] mt-0.5 font-bold opacity-70" style={{ color: isDark ? "#94A3B8" : "#64748B" }}>
-                {TEACHER.grade} · {TEACHER.students} students
+                {displayGrade}
               </p>
             </div>
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0 shadow-md"
               style={{ background: "linear-gradient(135deg, #22C55E, #134E34)", border: "2px solid rgba(34,197,94,0.3)" }}
             >
-              {TEACHER.initials}
+              {initials}
             </div>
             <ChevronDown className="w-3.5 h-3.5 hidden sm:block opacity-50" />
           </button>
@@ -130,14 +155,14 @@ export function TeacherLayout() {
                 className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-white text-lg shrink-0 shadow-sm"
                 style={{ background: "linear-gradient(135deg, #22C55E, #134E34)" }}
               >
-                {TEACHER.initials}
+                {initials}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-black leading-tight truncate" style={{ color: "#FFFFFF" }}>
-                  {TEACHER.name}
+                  {displayName}
                 </p>
                 <p className="text-[10px] mt-0.5 font-bold uppercase tracking-widest opacity-70" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  Grade {TEACHER.grade}
+                  {displayGrade}
                 </p>
               </div>
             </div>
@@ -207,16 +232,16 @@ export function TeacherLayout() {
               <Settings className="w-4 h-4 shrink-0" />
               Settings
             </Link>
-            <Link
-              to="/login"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border-none bg-transparent cursor-pointer"
               style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.12)"; (e.currentTarget as HTMLElement).style.color = "#FCA5A5"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)"; }}
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              Switch Role
-            </Link>
+              Sign Out
+            </button>
           </div>
         </aside>
 
@@ -326,7 +351,11 @@ export function TeacherLayout() {
                       );
                     })}
                     <Drawer.Close asChild>
-                      <Link to="/login" className="flex flex-col items-center gap-2 group" style={{ textDecoration: "none" }}>
+                      <button
+                        onClick={handleSignOut}
+                        className="flex flex-col items-center gap-2 group border-none bg-transparent cursor-pointer"
+                        style={{ textDecoration: "none" }}
+                      >
                         <div
                           className="w-14 h-14 rounded-2xl flex items-center justify-center"
                           style={{
@@ -337,9 +366,9 @@ export function TeacherLayout() {
                           <LogOut className="w-6 h-6" style={{ color: "#EF4444" }} />
                         </div>
                         <span className="text-[10px] font-black" style={{ color: "#EF4444" }}>
-                          Switch
+                          Sign Out
                         </span>
-                      </Link>
+                      </button>
                     </Drawer.Close>
                   </div>
                 </div>

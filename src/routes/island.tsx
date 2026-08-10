@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
-import { Logo } from "@/components/soma/Logo";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
+import { Logo } from "@/components/vive/Logo";
 
 export const Route = createFileRoute("/island")({
-  head: () => ({ meta: [{ title: "Soma AI Island" }] }),
+  head: () => ({ meta: [{ title: "Vive AI Island" }] }),
   component: Index,
 });
 
@@ -15,7 +15,7 @@ const STOPS = [
   { id:"progress",  icon:"📊", label:"Progress",   desc:"Live charts tracking your subject mastery!",          left:"33%",  top:"50%" },
 
   // 🌿 Pyramid / Jungle island (TOP CENTER) — 3 stops
-  { id:"tutor",     icon:"🤖", label:"Soma AI",    desc:"24/7 AI tutor — any subject, any time!",              left:"41%",  top:"25%" },
+  { id:"tutor",     icon:"🤖", label:"Vive AI",    desc:"24/7 AI tutor — any subject, any time!",              left:"41%",  top:"25%" },
   { id:"aiquiz",    icon:"✨", label:"AI Quiz",    desc:"Auto-generated quizzes tailored just for you!",       left:"54%",  top:"20%" },
   { id:"simplify",  icon:"📝", label:"Simplify",   desc:"Paste anything hard — get it explained simply!",      left:"47%",  top:"33%" },
 
@@ -35,7 +35,7 @@ const STOPS = [
   { id:"career",    icon:"🚀", label:"Career",     desc:"Explore future career paths powered by AI!",          left:"30%",  top:"77%" },
 ];
 
-const CHR_MSGS = ["Let's learn something new! ✨","I love this island! 🏝️","Tap a stop to explore! 🎯","SOMA AI is my best friend! 🤖","Choose your world! 🌍"];
+const CHR_MSGS = ["Let's learn something new! ✨","I love this island! 🏝️","Tap a stop to explore! 🎯","VIVE AI is my best friend! 🤖","Choose your world! 🌍"];
 
 function Index() {
   const navigate = useNavigate();
@@ -169,7 +169,7 @@ function Index() {
       {/* ── ISLAND PNG fills whole viewport ── */}
       <img
         src="/landing page island.png"
-        alt="Soma AI Island"
+        alt="Vive AI Island"
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",objectPosition:"center 55%",zIndex:8,pointerEvents:"none",userSelect:"none"}}
       />
 
@@ -247,7 +247,7 @@ function Index() {
           >
             ← Back
           </button>
-          <div style={{display:"flex",alignItems:"center",gap:10, background: "rgba(255,255,255,0.8)", padding: "4px 12px", borderRadius: "50px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
             <Logo size={40} />
           </div>
         </div>

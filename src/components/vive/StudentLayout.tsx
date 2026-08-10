@@ -1,15 +1,15 @@
 /**
  * StudentLayout.tsx — Sky-Blue Premium Sidebar Layout
  */
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { AccessibilityBar, AvatarMuteProvider } from "./AccessibilityBar";
+import { useSession, signOut } from "@/lib/auth-client";
 import {
   LogOut, Menu, Home, Bot, Sparkles, Pencil, ClipboardList,
   Zap, Video, MessageCircle, Gamepad2, Library, Calendar, TrendingUp,
-  Bell, Search, ChevronRight, Star,
+  Bell, Search, ChevronRight, Star, ChevronLeft,
 } from "lucide-react";
-import { STUDENT } from "@/lib/mock-data";
 import { useTheme } from "@/lib/theme-context";
 import { useEffect, useState } from "react";
 import { Drawer } from "vaul";
@@ -38,17 +38,45 @@ const NAV_TOOLS: NavItem[] = [
   { to: "/student/library",    label: "Library",    icon: Library,                    emoji: "📚" },
   { to: "/student/planner",    label: "Schedule",   icon: Calendar,                   emoji: "📅" },
   { to: "/student/progress",   label: "Analytics",  icon: TrendingUp,                 emoji: "📈" },
+  { to: "/student/messages",   label: "Messages",   icon: MessageCircle,              emoji: "💬" },
 ];
 
 const ALL_NAV: NavItem[] = [...NAV_MAIN, ...NAV_TOOLS];
 
-const XP_LEVEL = 1340;
 const XP_MAX   = 2000;
 
 export function StudentLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user;
+  if (!user) return null;
+
+  const displayName = user.name;
+  const displayGrade = user.schoolId || user.email;
+  const displayXP = typeof user.xp === 'number' ? user.xp : 0;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login" });
+  };
+
   const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("student_sidebar_collapsed") === "true";
+    }
+    return false;
+  });
+
+  const toggleCollapse = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem("student_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
 
   useEffect(() => { setMounted(true); }, []);
   const isDark = mounted && theme === "dark";
@@ -73,7 +101,7 @@ export function StudentLayout() {
         style={{ background: mainBg }}
       >
         {/* ════ SIDEBAR (DESKTOP) ════ */}
-        <aside className="hidden lg:flex flex-col w-[235px] h-full shrink-0 relative z-20 overflow-hidden">
+        <aside className={`hidden lg:flex flex-col h-full shrink-0 relative z-20 transition-all duration-300 ${isCollapsed ? "w-[72px]" : "w-[235px]"}`}>
           <div className="absolute inset-0" style={{ background: navBg }} />
           {/* Glow orbs */}
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full opacity-15 blur-[60px]" style={{ background: "#4A90D9" }} />
@@ -81,42 +109,74 @@ export function StudentLayout() {
           {/* Subtle grid overlay */}
           <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "24px 24px" }} />
 
+          {/* Collapse/Expand Floating Button */}
+          <button
+            onClick={toggleCollapse}
+            className="absolute top-5 -right-3 w-6 h-6 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md flex items-center justify-center z-30 text-slate-600 dark:text-slate-300 hover:scale-105 transition-all cursor-pointer"
+          >
+            {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          </button>
+
           {/* Logo */}
           <div className="relative z-10 h-[68px] px-4 flex items-center shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            <Logo size={28} lightBg={false} />
+            {!isCollapsed ? (
+              <Logo size={28} lightBg={false} />
+            ) : (
+              <div className="w-full flex justify-center">
+                <Logo size={14} lightBg={false} />
+              </div>
+            )}
           </div>
 
           {/* Student card */}
-          <div className="relative z-10 mx-3 mt-4 mb-3 rounded-2xl p-3.5 flex items-center gap-3"
-            style={{ background: "rgba(74,144,217,0.12)", border: "1px solid rgba(74,144,217,0.25)" }}>
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 shadow-lg"
-              style={{ background: "linear-gradient(135deg, #4A90D9, #1A3A5C)" }}
-            >
-              {STUDENT.name[0]}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-white text-sm font-black leading-tight truncate">{STUDENT.name}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{STUDENT.grade} · {XP_LEVEL.toLocaleString()} XP</p>
-              <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${(XP_LEVEL / XP_MAX) * 100}%`, background: "linear-gradient(90deg, #4A90D9, #87CEEB)" }}
-                />
+          {!isCollapsed ? (
+            <div className="relative z-10 mx-3 mt-4 mb-3 rounded-2xl p-3.5 flex items-center gap-3 transition-all duration-300"
+              style={{ background: "rgba(74,144,217,0.12)", border: "1px solid rgba(74,144,217,0.25)" }}>
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 shadow-lg"
+                style={{ background: "linear-gradient(135deg, #4A90D9, #1A3A5C)" }}
+              >
+                {displayName[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-white text-sm font-black leading-tight truncate">{displayName}</p>
+                <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{displayGrade} · {displayXP.toLocaleString()} XP</p>
+                <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${(displayXP / XP_MAX) * 100}%`, background: "linear-gradient(90deg, #4A90D9, #87CEEB)" }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="relative z-10 mx-auto mt-4 mb-3 flex items-center justify-center transition-all duration-300">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 shadow-lg"
+                style={{ background: "linear-gradient(135deg, #4A90D9, #1A3A5C)" }}
+                title={`${displayName} (${displayGrade})`}
+              >
+                {displayName[0]?.toUpperCase()}
+              </div>
+            </div>
+          )}
 
           {/* Navigation */}
-          <nav className="relative z-10 flex-1 overflow-y-auto px-2.5 py-1 space-y-0.5">
-            <p className="px-3 mb-2 mt-1 text-[9px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>Main</p>
+          <nav className={`relative z-10 flex-1 overflow-y-auto py-1 space-y-0.5 ${isCollapsed ? "px-1.5" : "px-2.5"}`}>
+            {!isCollapsed ? (
+              <p className="px-3 mb-2 mt-1 text-[9px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>Main</p>
+            ) : (
+              <div className="h-px my-3 mx-2 bg-white/10" />
+            )}
             {NAV_MAIN.map((n) => {
               const active = n.exact ? path === n.to : path.startsWith(n.to);
               const Icon = n.icon;
               return (
                 <Link
                   key={n.to} to={n.to}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 relative"
+                  onClick={() => setIsCollapsed(true)}
+                  title={isCollapsed ? n.label : undefined}
+                  className={`flex items-center rounded-xl text-sm font-bold transition-all duration-200 relative ${isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"}`}
                   style={{
                     background: active ? "rgba(74,144,217,0.22)" : "transparent",
                     color: active ? "#BFDBFE" : "rgba(255,255,255,0.55)",
@@ -129,20 +189,26 @@ export function StudentLayout() {
                 >
                   {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: "#4A90D9" }} />}
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span>{n.label}</span>
-                  {active && <ChevronRight className="w-3 h-3 ml-auto opacity-50" />}
+                  {!isCollapsed && <span>{n.label}</span>}
+                  {active && !isCollapsed && <ChevronRight className="w-3 h-3 ml-auto opacity-50" />}
                 </Link>
               );
             })}
 
-            <p className="px-3 mb-2 mt-4 text-[9px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>Study Tools</p>
+            {!isCollapsed ? (
+              <p className="px-3 mb-2 mt-4 text-[9px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>Study Tools</p>
+            ) : (
+              <div className="h-px my-4 mx-2 bg-white/10" />
+            )}
             {NAV_TOOLS.map((n) => {
               const active = path.startsWith(n.to);
               const Icon = n.icon;
               return (
                 <Link
                   key={n.to} to={n.to}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 relative"
+                  onClick={() => setIsCollapsed(true)}
+                  title={isCollapsed ? n.label : undefined}
+                  className={`flex items-center rounded-xl text-sm font-bold transition-all duration-200 relative ${isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"}`}
                   style={{
                     background: active ? "rgba(74,144,217,0.22)" : "transparent",
                     color: active ? "#BFDBFE" : "rgba(255,255,255,0.55)",
@@ -155,8 +221,8 @@ export function StudentLayout() {
                 >
                   {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: "#4A90D9" }} />}
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span>{n.label}</span>
-                  {active && <ChevronRight className="w-3 h-3 ml-auto opacity-50" />}
+                  {!isCollapsed && <span>{n.label}</span>}
+                  {active && !isCollapsed && <ChevronRight className="w-3 h-3 ml-auto opacity-50" />}
                 </Link>
               );
             })}
@@ -164,16 +230,17 @@ export function StudentLayout() {
 
           {/* Sidebar footer */}
           <div className="relative z-10 p-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-            <Link
-              to="/login"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+            <button
+              onClick={handleSignOut}
+              title={isCollapsed ? "Sign Out" : undefined}
+              className={`w-full flex items-center rounded-xl text-sm font-bold transition-all ${isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"} cursor-pointer border-none bg-transparent`}
               style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)"; (e.currentTarget as HTMLElement).style.color = "#FCA5A5"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)"; }}
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              Sign Out
-            </Link>
+              {!isCollapsed && <span>Sign Out</span>}
+            </button>
           </div>
         </aside>
 
@@ -227,14 +294,14 @@ export function StudentLayout() {
 
               <button className="flex items-center gap-2.5 hover:opacity-85 transition-opacity">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-black leading-none" style={{ color: textPrimary }}>{STUDENT.name}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>{STUDENT.grade} Student</p>
+                  <p className="text-sm font-black leading-none" style={{ color: textPrimary }}>{displayName}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>{displayGrade}</p>
                 </div>
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0 shadow-md"
                   style={{ background: "linear-gradient(135deg, #4A90D9, #1A3A5C)" }}
                 >
-                  {STUDENT.name[0]}
+                  {displayName[0]?.toUpperCase()}
                 </div>
               </button>
             </div>
@@ -318,12 +385,12 @@ export function StudentLayout() {
                         );
                       })}
                       <Drawer.Close asChild>
-                        <Link to="/login" className="flex flex-col items-center gap-2 group" style={{ textDecoration: "none" }}>
+                        <button onClick={handleSignOut} className="flex flex-col items-center gap-2 group border-none bg-transparent cursor-pointer" style={{ textDecoration: "none" }}>
                           <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)" }}>
                             <LogOut className="w-6 h-6" style={{ color: "#EF4444" }} />
                           </div>
                           <span className="text-[10px] font-black" style={{ color: "#EF4444" }}>Sign Out</span>
-                        </Link>
+                        </button>
                       </Drawer.Close>
                     </div>
                   </div>

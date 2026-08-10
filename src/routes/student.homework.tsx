@@ -1,21 +1,30 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Clock, PlayCircle, Trophy, Users, Zap, CheckCircle2 } from "lucide-react";
-import { RiveAnimation } from "@/components/soma/RiveAnimation";
+import { Clock, PlayCircle, Trophy, Users, Zap, CheckCircle2, Loader2 } from "lucide-react";
+import { RiveAnimation } from "@/components/vive/RiveAnimation";
 import { useTheme } from "@/lib/theme-context";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/student/homework")({
-  head: () => ({ meta: [{ title: "Homework — Soma AI" }] }),
+  head: () => ({ meta: [{ title: "Homework — Vive AI" }] }),
   component: Homework,
 });
 
-const HOMEWORK: any[] = [];
-
 function Homework() {
   const [filter, setFilter] = useState("all");
-  const filtered = HOMEWORK.filter(h => filter === "all" || h.status === filter);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  const { data: assignments = [], isLoading } = useQuery({
+    queryKey: ["student-assignments"],
+    queryFn: async () => {
+      const res = await fetch("/api/student/assignments");
+      if (!res.ok) throw new Error("Failed to fetch assignments");
+      return res.json();
+    }
+  });
+
+  const filtered = assignments; // For now all are 'pending' visually
 
   const textPrimary = isDark ? "#F8FAFC" : "#0F172A";
   const textMuted   = isDark ? "#94A3B8" : "#64748B";
@@ -57,82 +66,61 @@ function Homework() {
       </div>
 
       {/* ── HOMEWORK LIST ── */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
-        {filtered.length > 0 ? filtered.map((h) => (
-          <div key={h.id} className="pro-card glass-panel hover-glow p-6">
-            <h3 className="font-black text-lg" style={{ color: textPrimary }}>{h.title}</h3>
-          </div>
-        )) : (
-          /* Empty state */
-          <div className="col-span-full py-16 text-center space-y-4 pro-card glass-panel flex flex-col items-center justify-center min-h-[300px]">
-            <div className="w-40 h-40">
-              <RiveAnimation src="/riv-animations/3352-7042-bluey-idle-animation.riv" className="w-full h-full opacity-80" />
-            </div>
-            <h3 className="text-2xl font-black" style={{ color: textPrimary }}>All clear! 🎉</h3>
-            <p className="text-sm font-bold max-w-sm mx-auto opacity-70 leading-relaxed" style={{ color: textMuted }}>
-              You have no pending homework. When your teacher assigns work, it'll appear right here!
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* ── FEATURED EXERCISE ── */}
-      <div
-        className="pro-card glass-panel hover-glow p-8 md:p-10 relative overflow-hidden"
-      >
-        <div className="absolute inset-0 opacity-10 bg-[url('/images/island-math.png')] bg-cover bg-center mix-blend-overlay" />
-        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-emerald-500/20 rounded-full filter blur-[80px]" />
-        
-        {/* title-animation Rive */}
-        <div className="absolute top-0 left-0 w-full h-12 pointer-events-none opacity-20 hidden md:block">
-          <RiveAnimation src="/riv-animations/26380-49366-title-animation.riv" className="w-full h-full" />
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
         </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+          {filtered.length > 0 ? filtered.map((h: any) => (
+            <Link to="/student/homework/$assignmentId" params={{ assignmentId: h.id }} key={h.id} className="pro-card pro-card-hover glass-panel hover-glow p-6 flex flex-col gap-4 relative overflow-hidden group">
+              {/* Top accent bar */}
+              <div className="absolute top-0 left-0 w-full h-1" style={{ background: `linear-gradient(90deg,transparent,#5BA0E3,transparent)` }} />
+              {/* Background hover glow */}
+              <div className="absolute -bottom-6 -right-6 w-20 h-20 rounded-full filter blur-[25px] opacity-0 group-hover:opacity-20 transition-opacity duration-500" style={{ background: "#5BA0E3" }} />
 
-        <div className="relative z-10 grid md:grid-cols-[1fr_300px] gap-10 items-center">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm"
-              style={{ background: "rgba(16,185,129,0.15)", color: "#10B981", border: "1px solid rgba(16,185,129,0.3)" }}>
-              <Zap className="h-3 w-3 animate-pulse" /> Exercise of the Week
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-black" style={{ color: textPrimary }}>Interactive Science Lab</h2>
-            
-            <p className="text-sm md:text-base font-medium leading-relaxed max-w-lg opacity-80" style={{ color: textPrimary }}>
-              Step into our virtual laboratory to explore the human digestive system.
-              Complete all experiments this week to unlock the exclusive <strong className="text-emerald-500">Master Scientist</strong> badge!
-            </p>
-            
-            <div className="pt-2">
-              <button className="pro-btn group" style={{ background: "#10B981", color: "#FFF", borderRadius: "999px", padding: "12px 32px" }}>
-                Enter Lab <PlayCircle className="w-5 h-5 ml-2 group-hover:scale-110 transition-transform" />
-              </button>
-            </div>
-          </div>
-
-          <div className="hidden md:flex flex-col gap-4">
-            {[
-              { label: "Completion Rate", val: "85%", icon: Trophy, color: "#F59E0B" },
-              { label: "Active Students", val: "1.2k", icon: Users, color: "#3B82F6" },
-              { label: "Avg. Duration", val: "15 min", icon: Clock, color: "#10B981" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="px-5 py-4 flex items-center gap-4 rounded-2xl transition-all hover:scale-[1.02]"
-                style={{ background: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.7)", border: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(0,0,0,0.04)", boxShadow: "0 2px 10px rgba(0,0,0,0.02)" }}
-              >
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: `${stat.color}15`, border: `1px solid ${stat.color}30` }}>
-                  <stat.icon className="h-5 w-5" style={{ color: stat.color }} />
-                </div>
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-0.5" style={{ color: textMuted }}>{stat.label}</p>
-                  <p className="text-lg font-black" style={{ color: textPrimary }}>{stat.val}</p>
+              {/* Subject + urgency badges */}
+              <div className="flex items-center justify-between gap-2 relative z-10">
+                <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest" style={{ background: "rgba(59,130,246,0.12)", color: "#5BA0E3", border: `1px solid #5BA0E330` }}>
+                  General Subject
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-600 border border-amber-500/20`}>
+                    Pending
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
+              {/* Title */}
+              <h3 className="font-black text-base leading-snug relative z-10" style={{ color: textPrimary }}>{h.title}</h3>
+
+              {/* Description */}
+              <p className="text-xs font-medium leading-relaxed opacity-70 relative z-10 line-clamp-2" style={{ color: textMuted }}>{h.description || "No description provided."}</p>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between mt-auto relative z-10 pt-2" style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}` }}>
+                <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" style={{ color: textMuted }}>
+                  <Clock className="w-3 h-3" /> Due {h.dueDate ? new Date(h.dueDate).toLocaleDateString() : 'TBA'}
+                </span>
+                <span className="flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full" style={{ background: "rgba(245,158,11,0.1)", color: "#F59E0B" }}>
+                  <Trophy className="w-3 h-3" /> +{h.totalPoints} Pts
+                </span>
+              </div>
+            </Link>
+          )) : (
+            /* Empty state */
+            <div className="col-span-full py-16 text-center space-y-4 pro-card glass-panel flex flex-col items-center justify-center min-h-[300px]">
+              <div className="w-40 h-40">
+                <RiveAnimation src="/riv-animations/3352-7042-bluey-idle-animation.riv" className="w-full h-full opacity-80" />
+              </div>
+              <h3 className="text-2xl font-black" style={{ color: textPrimary }}>All clear! 🎉</h3>
+              <p className="text-sm font-bold max-w-sm mx-auto opacity-70 leading-relaxed" style={{ color: textMuted }}>
+                You have no pending homework. When your teacher assigns work, it'll appear right here!
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

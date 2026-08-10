@@ -89,7 +89,9 @@ export default function PDFViewer({ file, page, fontSize, onTotalPages, onPageCh
           </div>
         }
       >
-        {numPages && Array.from({ length: numPages }, (_, i) => i + 1).map((pg) => (
+        {numPages && Array.from({ length: numPages }, (_, i) => i + 1).map((pg) => {
+          const isNear = Math.abs(pg - page) <= 2;
+          return (
           <div
             key={pg}
             data-page={pg}
@@ -103,20 +105,26 @@ export default function PDFViewer({ file, page, fontSize, onTotalPages, onPageCh
             <div className="mb-2 px-3 py-1 rounded-full bg-black/10 text-[10px] font-black uppercase tracking-widest text-[#9AA5B4]">
               Page {pg}
             </div>
-            <Page
-              pageNumber={pg}
-              renderTextLayer={true}
-              renderAnnotationLayer={true}
-              scale={scale}
-              className="shadow-[0_8px_40px_rgba(0,0,0,0.12)] rounded-lg overflow-hidden border border-black/5"
-              loading={
-                <div className="h-[800px] w-[600px] bg-gray-50 flex items-center justify-center rounded-lg border border-black/5">
-                  <Brain className="h-6 w-6 text-[#4A90D9] animate-pulse" />
-                </div>
-              }
-            />
+            {isNear ? (
+              <Page
+                pageNumber={pg}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                scale={scale}
+                className="shadow-[0_8px_40px_rgba(0,0,0,0.12)] rounded-lg overflow-hidden border border-black/5"
+                loading={
+                  <div className="h-[800px] w-[600px] bg-gray-50 flex items-center justify-center rounded-lg border border-black/5">
+                    <Brain className="h-6 w-6 text-[#4A90D9] animate-pulse" />
+                  </div>
+                }
+              />
+            ) : (
+              <div className="h-[800px] w-[600px] bg-gray-50 flex items-center justify-center rounded-lg border border-black/5 shadow-[0_8px_40px_rgba(0,0,0,0.12)]">
+                <Brain className="h-6 w-6 text-[#4A90D9] opacity-20" />
+              </div>
+            )}
           </div>
-        ))}
+        )})}
       </Document>
     </div>
   );

@@ -1,7 +1,7 @@
 // Lightweight route time tracking using localStorage
 type Totals = Record<string, number>; // seconds
 
-const STORAGE_KEY = "soma_route_time_totals";
+const STORAGE_KEY = "vive_route_time_totals";
 
 export function getTotals(): Totals {
   try {
@@ -30,7 +30,7 @@ export function addSeconds(route: string, seconds: number) {
 
 // Session helpers use sessionStorage so they are not persisted across tabs
 function sessionKey(route: string) {
-  return `soma_route_time_session_${route}`;
+  return `vive_route_time_session_${route}`;
 }
 
 export function startSession(route: string) {

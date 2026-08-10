@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { geminiSimplify } from "@/lib/gemini-server";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { Logo } from "@/components/soma/Logo";
@@ -27,7 +28,7 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Soma AI — Learn Smarter with your AI study mentor" },
+      { title: "Vive AI — Learn Smarter with your AI study mentor" },
       {
         name: "description",
         content: "AI-powered, inclusive learning platform for African students.",
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/")({
   component: () => <Index routeLanguageCode="en" />,
 });
 
-/* ─────────────── DATA ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -64,7 +65,7 @@ const FEATURES = [
   {
     icon: BookOpen,
     title: "Simplify Notes",
-    desc: "Paste any textbook paragraph and let Soma AI rewrite it in simpler language or bullet points.",
+    desc: "Paste any textbook paragraph and let Vive AI rewrite it in simpler language or bullet points.",
     color: "#00C36B",
   },
   {
@@ -76,7 +77,7 @@ const FEATURES = [
   {
     icon: Languages,
     title: "Multi-lingual",
-    desc: "Learn in Swahili, Yoruba, Zulu or French. Soma speaks your language.",
+    desc: "Learn in Swahili, Yoruba, Zulu or French. Vive speaks your language.",
     color: "#8B5CF6",
   },
   {
@@ -120,7 +121,7 @@ const TESTIMONIALS = [
     name: 'Amina Kamanzi',
     role: 'S4 Student, Kigali',
     color: 'bg-primary text-white',
-    quote: 'I used to struggle with biology notes. Soma AI made everything clear and even quizzed me. My grade went from C to A in one term.',
+    quote: 'I used to struggle with biology notes. Vive AI made everything clear and even quizzed me. My grade went from C to A in one term.',
   },
   {
     initials: 'MN',
@@ -188,7 +189,7 @@ const PLANS = [
   },
 ];
 
-/* ─────────────── COMPONENT ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ COMPONENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const LANGUAGES = [
   { code: "rw", flag: "🇷🇼", label: "Kinyarwanda" },
@@ -197,7 +198,7 @@ const LANGUAGES = [
   { code: "ke", flag: "🇰🇪", label: "Kiswahili" },
 ];
 
-/* ─────────────── QUIZ DATA ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ QUIZ DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export type LandingLanguageCode = "en" | "fr" | "rw" | "sw";
 
 const LANGUAGE_ROUTES: Record<string, `/${LandingLanguageCode}`> = {
@@ -239,13 +240,13 @@ const QUICK_QUIZ_QUESTIONS = [
   },
 ];
 
-/* ─────────────── DEMO WIDGET ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ DEMO WIDGET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function DemoWidget() {
   const [activeTab, setActiveTab] = useState<"simplifier" | "quiz">("simplifier");
 
-  // ── Simplifier state ──
+  // â”€â”€ Simplifier state â”€â”€
   const [noteText, setNoteText] = useState(
-    "Photosynthesis is the process by which plants convert light energy into chemical energy stored as glucose. It occurs in the chloroplasts using chlorophyll to absorb sunlight. The equation is: 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂. It has two stages: light-dependent reactions and the Calvin cycle."
+    "Photosynthesis is the process by which plants convert light energy into chemical energy stored as glucose. It occurs in the chloroplasts using chlorophyll to absorb sunlight. The equation is: 6COâ‚‚ + 6Hâ‚‚O + light â†’ Câ‚†Hâ‚â‚‚Oâ‚† + 6Oâ‚‚. It has two stages: light-dependent reactions and the Calvin cycle."
   );
   const [simplified, setSimplified] = useState<string[] | null>(null);
   const [keywords, setKeywords]     = useState<string[]>([]);
@@ -264,15 +265,8 @@ function DemoWidget() {
     setSimplified(null);
     setKeywords([]);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: `You are Soma AI, a study helper for African students aged 12-18.
+      // Use secure server-side Gemini â€” no API key exposed to browser
+      const prompt = `You are Vive AI, a study helper for African students aged 12-18.
 Simplify the following note into clear, easy numbered steps a teen can understand.
 Then list 3-5 KEY WORDS from the text.
 
@@ -280,13 +274,10 @@ Respond ONLY in this exact JSON format (no markdown, no extra text):
 {"steps":["step 1","step 2","step 3"],"keywords":["word1","word2","word3"]}
 
 Note to simplify:
-${noteText}`,
-          }],
-        }),
-      });
-      const data = await res.json();
-      const raw = data.content?.find((b: { type: string }) => b.type === "text")?.text ?? "{}";
-      const clean = raw.replace(/```json|```/g, "").trim();
+${noteText}`;
+
+      const raw = await geminiSimplify({ data: { text: prompt, promptType: "quiz-start", temperature: 0.4 } });
+      const clean = (raw ?? "").replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
       setSimplified(parsed.steps ?? []);
       setKeywords(parsed.keywords ?? []);
@@ -313,7 +304,7 @@ ${noteText}`,
     synthRef.current.speak(utt);
   };
 
-  // ── Quiz state ──
+  // â”€â”€ Quiz state â”€â”€
   const [qIdx, setQIdx]       = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore]     = useState(0);
@@ -333,7 +324,7 @@ ${noteText}`,
   return (
     <div className="max-w-5xl mx-auto bg-white rounded-[28px] shadow-lg border border-gray-100 overflow-hidden">
 
-      {/* ── Tabs ── */}
+      {/* â”€â”€ Tabs â”€â”€ */}
       <div className="flex border-b border-gray-100">
         <button
           onClick={() => setActiveTab("simplifier")}
@@ -357,11 +348,11 @@ ${noteText}`,
         </button>
       </div>
 
-      {/* ── SIMPLIFIER TAB ── */}
+      {/* â”€â”€ SIMPLIFIER TAB â”€â”€ */}
       {activeTab === "simplifier" && (
         <div className="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
 
-          {/* Left — input */}
+          {/* Left â€” input */}
           <div className="p-8 flex flex-col gap-4">
             <p className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Your Notes</p>
             <textarea
@@ -387,7 +378,7 @@ ${noteText}`,
             </button>
           </div>
 
-          {/* Right — output */}
+          {/* Right â€” output */}
           <div className="p-8 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Simplified Version</p>
@@ -400,7 +391,7 @@ ${noteText}`,
                       : "text-[#475569] border-gray-200 hover:border-[#2563EB] hover:text-[#2563EB]"
                   }`}
                 >
-                  {speaking ? "⏹ Stop" : "▷ Read aloud"}
+                  {speaking ? "â¹ Stop" : "â–· Read aloud"}
                 </button>
               )}
             </div>
@@ -415,7 +406,7 @@ ${noteText}`,
               {loading && (
                 <div className="m-auto flex flex-col items-center gap-3">
                   <div className="w-8 h-8 border-2 border-[#2563EB]/20 border-t-[#2563EB] rounded-full animate-spin" />
-                  <p className="text-xs text-[#94A3B8] font-semibold">Soma AI is thinking...</p>
+                  <p className="text-xs text-[#94A3B8] font-semibold">Vive AI is thinking...</p>
                 </div>
               )}
               {simplified && simplified.map((step, i) => (
@@ -441,7 +432,7 @@ ${noteText}`,
         </div>
       )}
 
-      {/* ── QUIZ TAB ── */}
+      {/* â”€â”€ QUIZ TAB â”€â”€ */}
       {activeTab === "quiz" && (
         <div className="p-8 max-w-2xl mx-auto">
           {quizDone ? (
@@ -449,7 +440,7 @@ ${noteText}`,
               <div className="text-6xl">{score === 3 ? "🏆" : score >= 2 ? "🌟" : "📚"}</div>
               <h3 className="text-2xl font-black">You scored {score}/{QUICK_QUIZ_QUESTIONS.length}</h3>
               <p className="text-sm text-[#64748B] font-medium">
-                {score === 3 ? "Perfect! You've mastered this topic." : score >= 2 ? "Great job! Keep it up." : "Keep studying — you'll get it!"}
+                {score === 3 ? "🏆" : score >= 2 ? "🌟" : "📚"}
               </p>
               <button onClick={resetQuiz} className="h-11 px-8 rounded-2xl bg-[#2563EB] text-white text-sm font-black hover:bg-[#1D4ED8] transition-all hover:scale-105">
                 Try Again
@@ -500,7 +491,7 @@ ${noteText}`,
                   onClick={handleNext}
                   className="w-full h-11 rounded-2xl bg-[#2563EB] text-white text-sm font-black hover:bg-[#1D4ED8] transition-all hover:scale-[1.02]"
                 >
-                  {qIdx < QUICK_QUIZ_QUESTIONS.length - 1 ? "Next Question →" : "See Results"}
+                  {qIdx < QUICK_QUIZ_QUESTIONS.length - 1 ? "Next Question â†’" : "See Results"}
                 </button>
               )}
             </div>
@@ -511,7 +502,7 @@ ${noteText}`,
   );
 }
 
-/* ─────────────── MAIN INDEX ─────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ MAIN INDEX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguageCode }) {
   const [dyslexia, setDyslexia] = useState(false);
@@ -529,7 +520,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
           : {}
       }
     >
-      {/* ── NAVBAR ── */}
+      {/* â”€â”€ NAVBAR â”€â”€ */}
       <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-6">
           {/* Logo */}
@@ -579,7 +570,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
                         <span className="text-sm">{lang.flag}</span>
                         <span className="flex-1">{lang.label}</span>
                         {selectedLang.code === lang.code && (
-                          <span className="text-[#2563EB]">✓</span>
+                          <span className="text-[#2563EB]">âœ“</span>
                         )}
                       </Link>
                     ))}
@@ -608,7 +599,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
                 className="h-9 px-5 text-sm font-bold bg-gradient-to-r from-[#3B82F6] to-[#2563EB] hover:from-[#2563EB] hover:to-[#1D4ED8] text-white rounded-full shadow-[0_4px_14px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center gap-1.5"
                 asChild
               >
-                <Link to="/island">🏝️ Explore Soma Island</Link>
+                <Link to="/island">🏝️ Explore Vive Island</Link>
               </Button>
               <Link
                 to="/login"
@@ -686,7 +677,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
                 asChild
               >
                 <Link to="/island" onClick={() => setMobileOpen(false)}>
-                  🏝️ Explore Soma Island
+                  🏝️ Explore Vive Island
                 </Link>
               </Button>
               <div className="flex items-center gap-4 pt-1">
@@ -705,7 +696,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         )}
       </header>
 
-      {/* ── HERO ── */}
+      {/* â”€â”€ HERO â”€â”€ */}
       <section className="relative pt-1 pb-1 overflow-visible" style={{ background: "#f5f0f5" }}>
         {/* Decorative blobs */}
         <div aria-hidden="true" className="absolute top-[-80px] right-[10%] w-[300px] h-[300px] rounded-full z-0" style={{ background: "rgba(7, 74, 218, 0.07)" }} />
@@ -732,7 +723,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
               <span className="text-[#2563EB]">study buddy</span>
             </h1>
             <p className="text-base text-[#4B5563] max-w-md leading-relaxed font-medium">
-              Soma AI simplifies your notes, builds personal study plans, and quizzes you so every student can succeed, even with dyslexia or reading challenges.
+              Vive AI simplifies your notes, builds personal study plans, and quizzes you so every student can succeed, even with dyslexia or reading challenges.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button size="lg" className="h-12 px-7 text-sm font-bold bg-[#22C55E] hover:bg-[#1D4ED8] text-white rounded-2xl" asChild>
@@ -754,7 +745,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
             </div>
           </div>
 
-          {/* Right – Hero Image with ring + floating avatars */}
+          {/* Right â€“ Hero Image with ring + floating avatars */}
           <div className="relative flex justify-center items-center py-10 overflow-hidden md:overflow-visible">
             {/* Outer ring */}
             <div
@@ -779,7 +770,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
               }}
             />
 
-            {/* Floating avatar – top center */}
+            {/* Floating avatar â€“ top center */}
             <div
               className="absolute z-20 hidden md:block"
               style={{ top: 0, left: "50%", transform: "translateX(-50%)" }}
@@ -789,7 +780,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
               </div>
             </div>
 
-            {/* Floating avatar – left middle */}
+            {/* Floating avatar â€“ left middle */}
             <div
               className="absolute z-20 hidden md:block"
               style={{ top: "50%", left: -10, transform: "translateY(-50%)" }}
@@ -799,7 +790,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
               </div>
             </div>
 
-            {/* Floating avatar – right middle */}
+            {/* Floating avatar â€“ right middle */}
             <div
               className="absolute z-20 hidden md:block"
               style={{ top: "50%", right: -10, transform: "translateY(-50%)" }}
@@ -809,7 +800,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
               </div>
             </div>
 
-            {/* Main image – clipped circle bottom */}
+            {/* Main image â€“ clipped circle bottom */}
             <div
               className="relative z-10 overflow-hidden w-[280px] h-[350px] sm:w-[400px] sm:h-[500px]"
               style={{
@@ -819,7 +810,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
             >
               <img
                 src={img1}
-                alt="Student learning with Soma AI"
+                alt="Student learning with Vive AI"
                 className="w-full h-full object-cover object-top"
               />
 
@@ -829,7 +820,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         </div>
       </section>
 
-      {/* ── STATS BAR ── */}
+      {/* â”€â”€ STATS BAR â”€â”€ */}
       <div className="bg-white border-y border-white py-10 mt-">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {STATS.map((s) => (
@@ -841,7 +832,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         </div>
       </div>
 
-      {/* ── FEATURES ── */}
+      {/* â”€â”€ FEATURES â”€â”€ */}
       <section id="features" className="py-28 bg-[#F0F4FF]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 space-y-3">
@@ -871,21 +862,21 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         </div>
       </section>
 
-      {/* ── DEMO ── */}
+      {/* â”€â”€ DEMO â”€â”€ */}
       <section id="demo" className="py-28 bg-[#F8FAFC] border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 space-y-3">
-            <p className="text-xs font-black uppercase tracking-widest text-[#2563EB]">Experience Soma</p>
+            <p className="text-xs font-black uppercase tracking-widest text-[#2563EB]">Experience Vive</p>
             <h2 className="text-4xl font-black tracking-tight">See how it works</h2>
             <p className="text-sm text-[#64748B] font-semibold max-w-lg mx-auto">
-              Paste any textbook paragraph — Soma AI breaks it down into simple steps and quizzes you instantly.
+              Paste any textbook paragraph â€” Vive AI breaks it down into simple steps and quizzes you instantly.
             </p>
           </div>
           <DemoWidget />
         </div>
       </section>
 
-      {/* ── 3 STEPS ── */}
+      {/* â”€â”€ 3 STEPS â”€â”€ */}
       <section className="py-28 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -903,7 +894,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
+      {/* â”€â”€ TESTIMONIALS â”€â”€ */}
       <section className="bg-[#3B6AE8] py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -934,7 +925,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         </div>
       </section>
 
-      {/* ── PRICING ── */}
+      {/* â”€â”€ PRICING â”€â”€ */}
       <section id="pricing" className="py-28 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 space-y-3">
@@ -1004,13 +995,13 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
         </div>
       </section>
 
-      {/* ── CTA BANNER ── */}
+      {/* â”€â”€ CTA BANNER â”€â”€ */}
       <section id="schools" className="max-w-7xl mx-auto px-6 py-20">
         <div className="relative rounded-[48px] bg-[#0F172A] overflow-hidden p-14 lg:p-20 flex flex-col lg:flex-row items-center gap-14">
           <div className="relative z-10 text-white space-y-6 lg:w-1/2">
             <h2 className="text-4xl md:text-5xl font-black leading-tight tracking-tight">Start Your Learning Journey Today</h2>
             <p className="text-base opacity-80 font-medium leading-relaxed">
-              Join thousands of students across Rwanda using Soma AI to achieve higher grades and clearer understanding.
+              Join thousands of students across Rwanda using Vive AI to achieve higher grades and clearer understanding.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button size="lg" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white h-12 px-8 rounded-2xl font-black text-sm transition-transform hover:scale-105" asChild>
@@ -1023,13 +1014,13 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
           </div>
           <div className="relative lg:w-1/2 flex justify-center">
             <div className="w-full max-w-xs aspect-square rounded-[40px] overflow-hidden ring-8 ring-white/10">
-              <img src={img2} alt="Student with Soma AI" className="w-full h-full object-cover" />
+              <img src={img2} alt="Student with Vive AI" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* â”€â”€ FOOTER â”€â”€ */}
       <footer className="bg-[#0F172A] text-gray-400 py-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 border-b border-white/5 pb-16">
@@ -1064,7 +1055,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
                 </li>
                 <li className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-[#00C36B]" />
-                  somaai1@gmail.com
+                  viveai@gmail.com
                 </li>
               </ul>
             </div>
@@ -1072,7 +1063,7 @@ export function Index({ routeLanguageCode }: { routeLanguageCode: LandingLanguag
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <p className="text-sm font-semibold uppercase tracking-widest">
-              © 2026 Soma AI Education. All rights reserved.
+              Â© 2026 Vive AI Education. All rights reserved.
             </p>
             <div className="flex gap-4">
               {["𝕏", "in", "f"].map((s) => (
@@ -1095,3 +1086,5 @@ function SparkleIcon() {
     </svg>
   );
 }
+
+

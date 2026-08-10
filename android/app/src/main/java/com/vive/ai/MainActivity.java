@@ -1,4 +1,4 @@
-package com.soma.ai;
+package com.vive.ai;
 
 import com.getcapacitor.BridgeActivity;
 
