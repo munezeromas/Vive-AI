@@ -7,6 +7,7 @@
     "dev": "concurrently \"vite dev\" \"npx tsx watch src/backend/server.ts\"",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "start": "tsx src/backend/server.ts",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -87,6 +88,7 @@
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
+    "tsx": "^4.19.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {

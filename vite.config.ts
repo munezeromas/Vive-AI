@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tsConfigPaths(),
       tailwindcss(),
-      mode === "production" && cloudflare(),
+      process.env.DEPLOY_TARGET === "cloudflare" && cloudflare(),
     ].filter(Boolean),
     optimizeDeps: {
       exclude: ["@met4citizen/talkinghead"],

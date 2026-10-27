@@ -1,4 +1,7 @@
 import "dotenv/config";
+import path from "node:path";
+import fs from "node:fs";
+import { pathToFileURL } from "node:url";
 import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
@@ -18,11 +21,17 @@ const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173,http:
 
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".vercel.app") ||
+      origin.endsWith(".onrender.com") ||
+      origin.endsWith(".netlify.app")
+    ) {
       callback(null, true);
       return;
     }
-    callback(new Error("Origin is not allowed"));
+    callback(new Error("Origin is not allowed: " + origin));
   },
   credentials: true,
 }));
@@ -1833,9 +1842,81 @@ app.post("/api/classes/:classId/announcements", async (req, res) => {
   }
 });
 
+// ─── PRODUCTION STATIC ASSETS & SSR ───
+const clientDist = path.resolve(process.cwd(), "dist/client");
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+}
+
+let ssrHandler: any = null;
+app.use(async (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
+
+  try {
+    if (!ssrHandler) {
+      const ssrPath = path.resolve(process.cwd(), "dist/server/server.js");
+      if (fs.existsSync(ssrPath)) {
+        const mod = await import(pathToFileURL(ssrPath).href);
+        ssrHandler = mod.default;
+      }
+    }
+
+    if (ssrHandler && typeof ssrHandler.fetch === "function") {
+      const protocol = req.protocol || (req.headers["x-forwarded-proto"] as string) || "http";
+      const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost";
+      const fullUrl = `${protocol}://${host}${req.originalUrl}`;
+
+      const headers = new Headers();
+      for (const [key, value] of Object.entries(req.headers)) {
+        if (Array.isArray(value)) {
+          for (const v of value) headers.append(key, v);
+        } else if (value !== undefined) {
+          headers.set(key, value);
+        }
+      }
+
+      const webRequest = new Request(fullUrl, {
+        method: req.method,
+        headers,
+      });
+
+      const webResponse = await ssrHandler.fetch(webRequest);
+
+      res.status(webResponse.status);
+      webResponse.headers.forEach((val: string, key: string) => {
+        res.setHeader(key, val);
+      });
+
+      if (webResponse.body) {
+        const reader = webResponse.body.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
+        res.end();
+      } else {
+        res.end();
+      }
+      return;
+    }
+  } catch (ssrErr) {
+    console.error("SSR Render Error:", ssrErr);
+  }
+  next();
+});
+
 // Global 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: "Endpoint not found", path: req.path, method: req.method });
+  if (req.path.startsWith("/api")) {
+    return res.status(404).json({ error: "Endpoint not found", path: req.path, method: req.method });
+  }
+  const indexPath = path.resolve(process.cwd(), "dist/client/index.html");
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.status(404).send("Not Found");
 });
 
 // Global error handler
@@ -1849,9 +1930,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✓ Backend Server running on http://localhost:${PORT}`);
-  console.log(`✓ Swagger UI available at http://localhost:${PORT}/api/docs`);
-  console.log(`✓ Health check: GET http://localhost:${PORT}/health`);
-  console.log(`✓ Ready check: GET http://localhost:${PORT}/ready`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`✓ Backend Server running on http://localhost:${PORT}`);
+    console.log(`✓ Swagger UI available at http://localhost:${PORT}/api/docs`);
+    console.log(`✓ Health check: GET http://localhost:${PORT}/health`);
+    console.log(`✓ Ready check: GET http://localhost:${PORT}/ready`);
+  });
+}
+
+export default app;
