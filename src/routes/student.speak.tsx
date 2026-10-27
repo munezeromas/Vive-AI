@@ -430,7 +430,7 @@ function SpeakListenDashboard() {
 
       {/* Hero */}
       <div className="relative rounded-[2rem] overflow-hidden p-10 text-center"
-        style={{ background: "linear-gradient(135deg, #9B59B6 0%, #6366F1 50%, #3B82F6 100%)" }}>
+        style={{ background: "linear-gradient(135deg, #0F2447 0%, #1B4080 50%, #4A8FE7 100%)" }}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.15),transparent_60%)]" />
         <div className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/20 border border-white/30 text-white mb-2 backdrop-blur-sm">

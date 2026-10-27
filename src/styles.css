@@ -61,93 +61,93 @@
 :root {
   --radius: 0.75rem;
 
-  /* Brand — Sky Blue */
-  --primary: #4A90D9;
-  --primary-hover: #3B7DBF;
+  /* Brand — Powder Blue (matches Vive logo) */
+  --primary: #4A8FE7;
+  --primary-hover: #2B6FCC;
   --primary-foreground: #FFFFFF;
-  --secondary: #F59E0B;
+  --secondary: #D4952A;
   --secondary-foreground: #FFFFFF;
-  --accent: #22C55E;
+  --accent: #0E9F6E;
   --accent-foreground: #FFFFFF;
-  --success: #22C55E;
+  --success: #0E9F6E;
   --success-foreground: #FFFFFF;
-  --warm: #F59E0B;
+  --warm: #D4952A;
   --warm-foreground: #FFFFFF;
-  --destructive: #EF4444;
+  --destructive: #E02424;
   --destructive-foreground: #FFFFFF;
-  --primary-glow: rgba(74, 144, 217, 0.22);
+  --primary-glow: rgba(74, 143, 231, 0.22);
 
-  /* Surfaces */
-  --background: #F0F6FF;
-  --foreground: #0F172A;
+  /* Surfaces — slightly blue-tinted white for richness */
+  --background: #F7F9FD;
+  --foreground: #0A1628;
   --card: #FFFFFF;
-  --card-foreground: #0F172A;
+  --card-foreground: #0A1628;
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --muted: #F4F8FF;
-  --muted-foreground: #64748B;
-  --border: #DDE8F5;
+  --popover-foreground: #0A1628;
+  --muted: #EEF3FB;
+  --muted-foreground: #536B8A;
+  --border: #D6E2F5;
   --input: #FFFFFF;
-  --ring: #4A90D9;
+  --ring: #4A8FE7;
 
-  /* Sidebar — Deep navy with sky accent */
-  --sidebar: #1A3A5C;
+  /* Sidebar — Rich deep navy (matches logo's dark navy accent) */
+  --sidebar: #0F2447;
   --sidebar-foreground: rgba(255,255,255,0.85);
-  --sidebar-primary: #4A90D9;
+  --sidebar-primary: #4A8FE7;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: rgba(255,255,255,0.08);
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: transparent;
-  --sidebar-ring: #4A90D9;
+  --sidebar-ring: #4A8FE7;
 
-  /* Shadows */
-  --shadow-soft: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-  --shadow-glow: 0 0 0 3px rgba(74,144,217,0.15);
+  /* Shadows — richer, more premium */
+  --shadow-soft: 0 1px 4px rgba(15,36,71,0.08), 0 1px 2px rgba(15,36,71,0.04);
+  --shadow-card: 0 4px 16px -2px rgba(15,36,71,0.08), 0 2px 6px -1px rgba(15,36,71,0.04);
+  --shadow-lg: 0 12px 32px -4px rgba(15,36,71,0.12), 0 4px 12px -2px rgba(15,36,71,0.06);
+  --shadow-glow: 0 0 0 3px rgba(74,143,231,0.18);
 
-  /* Charts */
-  --chart-1: #4A90D9;
-  --chart-2: #22C55E;
-  --chart-3: #F59E0B;
-  --chart-4: #EF4444;
-  --chart-5: #A78BFA;
+  /* Charts — no purple */
+  --chart-1: #4A8FE7;
+  --chart-2: #0E9F6E;
+  --chart-3: #D4952A;
+  --chart-4: #E02424;
+  --chart-5: #1B4080;
 }
 
 /* ============================================================
-   DARK THEME — Deep Slate
+   DARK THEME — Deep Navy (rich, premium)
 ============================================================ */
 .dark {
-  --primary: #5BA0E3;
-  --primary-hover: #4A90D9;
-  --primary-glow: rgba(91,160,227,0.2);
-  --background: #0A1628;
-  --foreground: #F0F6FF;
-  --card: #0F2040;
-  --card-foreground: #F0F6FF;
-  --popover: #0F2040;
-  --popover-foreground: #F0F6FF;
-  --muted: #152035;
-  --muted-foreground: #8BAAC8;
-  --border: rgba(74,144,217,0.15);
+  --primary: #6AABF0;
+  --primary-hover: #4A8FE7;
+  --primary-glow: rgba(106,171,240,0.2);
+  --background: #060E1C;
+  --foreground: #EEF4FF;
+  --card: #0D1B35;
+  --card-foreground: #EEF4FF;
+  --popover: #0D1B35;
+  --popover-foreground: #EEF4FF;
+  --muted: #101F3A;
+  --muted-foreground: #7A9AC0;
+  --border: rgba(74,143,231,0.14);
   --input: rgba(255,255,255,0.06);
-  --ring: #4A90D9;
-  --sidebar: #091525;
-  --sidebar-foreground: rgba(255,255,255,0.8);
-  --sidebar-primary: #5BA0E3;
+  --ring: #4A8FE7;
+  --sidebar: #060E1C;
+  --sidebar-foreground: rgba(255,255,255,0.82);
+  --sidebar-primary: #6AABF0;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: rgba(255,255,255,0.06);
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: transparent;
-  --sidebar-ring: #4A90D9;
-  --shadow-soft: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
-  --chart-1: #5BA0E3;
-  --chart-2: #22C55E;
-  --chart-3: #F59E0B;
+  --sidebar-ring: #4A8FE7;
+  --shadow-soft: 0 1px 4px rgba(0,0,0,0.5);
+  --shadow-card: 0 4px 16px -2px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 32px -4px rgba(0,0,0,0.5);
+  --chart-1: #6AABF0;
+  --chart-2: #31C48D;
+  --chart-3: #F0B429;
   --chart-4: #F87171;
-  --chart-5: #A78BFA;
+  --chart-5: #93C5FD;
 }
 
 /* ============================================================
@@ -176,8 +176,8 @@
   /* Slim scrollbar */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(74,144,217,0.3); border-radius: 999px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(74,144,217,0.55); }
+  ::-webkit-scrollbar-thumb { background: rgba(74,143,231,0.3); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(74,143,231,0.55); }
 }
 
 /* ============================================================
@@ -201,9 +201,9 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .pro-card-hover:hover {
-  box-shadow: var(--shadow-lg), 0 0 24px rgba(74,144,217,0.12);
+  box-shadow: var(--shadow-lg), 0 0 28px rgba(74,143,231,0.14);
   transform: translateY(-4px) scale(1.01);
-  border-color: rgba(74,144,217,0.35);
+  border-color: rgba(74,143,231,0.38);
 }
 
 /* Stat card — Match reference exactly */
@@ -263,7 +263,7 @@
   border: 1px solid var(--primary);
   text-decoration: none;
 }
-.section-link:hover { background: rgba(79,70,229,0.05); }
+.section-link:hover { background: rgba(74,143,231,0.08); }
 
 /* ============================================================
    PROFESSIONAL SIDEBAR (Flowing Tab Design)
@@ -499,21 +499,21 @@
    PREMIUM UI ENHANCEMENTS
 ============================================================ */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 32px 0 rgba(15, 36, 71, 0.06);
 }
 
 .dark .glass-panel {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(13, 27, 53, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 24px rgba(74, 144, 217, 0.3);
+  box-shadow: 0 0 28px rgba(74, 143, 231, 0.28);
   transform: translateY(-2px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -528,9 +528,9 @@
 }
 
 @keyframes pulse-glow {
-  0% { box-shadow: 0 0 0 0 rgba(74, 144, 217, 0.4); }
-  70% { box-shadow: 0 0 0 15px rgba(74, 144, 217, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(74, 144, 217, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(74, 143, 231, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(74, 143, 231, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 143, 231, 0); }
 }
 .animate-pulse-glow {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -657,3 +657,106 @@
   color: #1E293B !important;
 }
 
+/* ============================================================
+   RICH PREMIUM UTILITIES — New additions
+============================================================ */
+
+/* Floating Ask Vive Button */
+.vive-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 8px 32px rgba(74,143,231,0.45), 0 2px 8px rgba(74,143,231,0.25);
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  background: linear-gradient(135deg, #4A8FE7, #1E5BBE);
+  color: white;
+}
+.vive-fab:hover {
+  transform: scale(1.12) translateY(-2px);
+  box-shadow: 0 14px 44px rgba(74,143,231,0.55);
+}
+.vive-fab-mobile {
+  bottom: 5.5rem;
+  right: 1rem;
+}
+
+/* Mission Cards */
+.mission-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.mission-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 48px rgba(74,143,231,0.14);
+  border-color: rgba(74,143,231,0.38);
+}
+
+/* Gold Badge */
+.gold-badge {
+  background: linear-gradient(135deg, #D4952A, #F0B429);
+  color: #FFF;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  padding: 0.2rem 0.65rem;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* AI Insight Card — Navy gradient */
+.insight-card {
+  background: linear-gradient(135deg, #0F2447 0%, #1A3A6E 100%);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(15,36,71,0.35);
+}
+
+/* Rich Hero Gradient */
+.rich-gradient-hero {
+  background: linear-gradient(135deg, #0F2447 0%, #1B4080 50%, #4A8FE7 100%);
+}
+
+/* Section link — updated color */
+.section-link:hover { background: rgba(74,143,231,0.06); }
+
+/* Sidebar flowing nav — dark sidebar bg update */
+.pro-sidebar {
+  background: #0F2447;
+}
+.dark .pro-sidebar {
+  background: #060E1C;
+}
+
+/* Theme toggle (no emoji) */
+.theme-toggle-btn.dark { background: #4A8FE7; border-color: #4A8FE7; }
+
+/* Update btn-play colors */
+.btn-play-primary { background: linear-gradient(135deg, #4A8FE7, #1E5BBE); color: #FFFFFF; }
+
+/* Mobile nav active color */
+.mobile-nav-item.active { color: #4A8FE7; }
+
+/* Calendar today color — gold */
+.calendar-day.today {
+  background: #D4952A;
+  color: white;
+}

@@ -88,7 +88,7 @@ function Assignments() {
 
       {/* ── HERO BANNER ── */}
       <div className="relative rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 shadow-xl hover-glow"
-        style={{ background: "linear-gradient(135deg, #4F46E5, #6366F1, #818CF8)", minHeight: "200px" }}>
+        style={{ background: "linear-gradient(135deg, #0F2447 0%, #1B4080 50%, #4A8FE7 100%)", minHeight: "200px" }}>
         <div className="absolute top-[-50%] right-[-10%] w-96 h-96 bg-white/10 rounded-full filter blur-[80px] animate-pulse-glow" />
 
         <div className="relative z-10 flex-1 space-y-3">

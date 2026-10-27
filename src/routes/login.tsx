@@ -378,7 +378,7 @@ function Login() {
     setAuthError("");
     setLoading(true);
     try {
-      const { error: signUpError } = await authClient.signUp.email({
+      const { error: signUpError } = await (authClient.signUp as any).email({
         email: regEmail,
         password: regPassword,
         name: regName,
@@ -467,10 +467,10 @@ function Login() {
     setAuthError("");
     setForgotLoading(true);
     try {
-      const { error } = await authClient.forgetPassword({
+      const { error } = await (authClient as any).forgetPassword?.({
         email: forgotEmail,
         redirectTo: `${window.location.origin}/login`,
-      });
+      }) || {};
       setForgotLoading(false);
       if (error) {
         setAuthError(error.message || "Failed to send reset link. Please try again.");

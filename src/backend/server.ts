@@ -959,13 +959,14 @@ app.get("/api/student/dashboard/top-scores", async (req, res) => {
   try {
     const allUsers = await db.select().from(user).where(eq(user.role, 'student'));
     // Simple sort by XP for "Top Scores"
-    const topStudents = allUsers.sort((a, b) => (b.xp || 0) - (a.xp || 0)).slice(0, 3);
+    const topStudents = allUsers.sort((a, b) => (b.xp || 0) - (a.xp || 0)).slice(0, 5);
     
     const topScores = topStudents.map((u, i) => ({
       name: u.name,
-      score: (u.xp || 0).toString() + " XP",
-      rank: i === 0 ? "1st" : i === 1 ? "2nd" : "3rd",
-      color: i === 0 ? "from-[#4ADE80] to-[#22C55E]" : i === 1 ? "from-[#60A5FA] to-[#4A90D9]" : "from-[#FCD34D] to-[#F59E0B]"
+      xp: u.xp || 0,
+      score: (u.xp || 0).toLocaleString() + " XP",
+      rank: i + 1,
+      color: i === 0 ? "#D4952A" : i === 1 ? "#536B8A" : i === 2 ? "#0E9F6E" : "#4A8FE7"
     }));
     
     res.json(topScores);
@@ -1051,7 +1052,7 @@ app.get("/api/assignments", async (req, res) => {
 
 app.get("/api/assignments/:id", async (req, res) => {
   const { id } = req.params;
-  const authUser = (req as AuthedRequest).authUser;
+  const authUser = (req as unknown as AuthedRequest).authUser;
   const assignment = await db.select().from(assignments).where(eq(assignments.id, id));
   if (assignment.length === 0) return res.status(404).json({ error: "Assignment not found" });
   if (authUser.role === "student") {
@@ -1557,7 +1558,7 @@ app.get("/api/notifications", async (req, res) => {
 
 app.patch("/api/notifications/:id/read", async (req, res) => {
   try {
-    const authUser = (req as AuthedRequest).authUser;
+    const authUser = (req as unknown as AuthedRequest).authUser;
     const { id } = req.params;
     const updated = await db.update(notifications)
       .set({ isRead: true })
@@ -1646,7 +1647,7 @@ app.get("/api/parent/students", async (req, res) => {
 
 app.get("/api/parent/student/:studentId/progress", async (req, res) => {
   try {
-    const authUser = (req as AuthedRequest).authUser;
+    const authUser = (req as unknown as AuthedRequest).authUser;
     if (authUser.role !== "parent") return res.status(403).json({ error: "Parent access is required." });
     const { studentId } = req.params;
     const relation = await db.select().from(parentStudentRelations).where(and(eq(parentStudentRelations.parentId, authUser.id), eq(parentStudentRelations.studentId, studentId)));
@@ -1727,7 +1728,7 @@ app.get("/api/messages", async (req, res) => {
 
 app.get("/api/messages/:otherUserId", async (req, res) => {
   try {
-    const authUser = (req as AuthedRequest).authUser;
+    const authUser = (req as unknown as AuthedRequest).authUser;
     const { otherUserId } = req.params;
     const history = await db.select().from(messages)
       .where(or(
@@ -1750,7 +1751,7 @@ app.get("/api/messages/:otherUserId", async (req, res) => {
 // ─── ANNOUNCEMENTS API ───
 app.get("/api/classes/:classId/announcements", async (req, res) => {
   try {
-    const authUser = (req as AuthedRequest).authUser;
+    const authUser = (req as unknown as AuthedRequest).authUser;
     const { classId } = req.params;
     if (authUser.role === "student") {
       const enrolled = await db.select().from(enrollments).where(and(eq(enrollments.studentId, authUser.id), eq(enrollments.classId, classId)));
@@ -1772,7 +1773,7 @@ app.get("/api/classes/:classId/announcements", async (req, res) => {
 
 app.post("/api/classes/:classId/announcements", async (req, res) => {
   try {
-    const authUser = (req as AuthedRequest).authUser;
+    const authUser = (req as unknown as AuthedRequest).authUser;
     if (authUser.role !== "teacher" && authUser.role !== "admin") return res.status(403).json({ error: "Teacher access is required." });
     const { classId } = req.params;
     const { attachmentUrl } = req.body;

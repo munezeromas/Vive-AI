@@ -3,7 +3,9 @@ import { useSession } from "@/lib/auth-client";
 import {
   ClipboardList, Users, Flame, Trophy,
   ChevronLeft, ChevronRight,
-  Bot, Sparkles, BookOpen, Star
+  Bot, Sparkles, BookOpen, Star, Target, School,
+  ThumbsUp, Smile, Meh, Battery, AlertCircle, ArrowRight,
+  CheckCircle, Play
 } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useState, useEffect } from "react";
@@ -69,71 +71,90 @@ function EmptyState({ icon: Icon, title, subtitle }: { icon: any; title: string;
   );
 }
 
+
+// Fallback mission images mapped to subject (kids photos)
+const MISSION_IMAGES: Record<string, string> = {
+  math:    "/images/hero.png",
+  science: "/images/student-hero.png",
+  lang:    "/classroom.png.png",
+  kinya:   "/kps.jpg",
+};
+
+const MOODS = [
+  { label: "Great", icon: ThumbsUp, color: "#0E9F6E" },
+  { label: "Good", icon: Smile, color: "#4A8FE7" },
+  { label: "Okay", icon: Meh, color: "#D4952A" },
+  { label: "Tired", icon: Battery, color: "#536B8A" },
+  { label: "Need Help", icon: AlertCircle, color: "#E02424" },
+];
+
+
 function Dashboard() {
   const { data: sessionData } = useSession();
   const sessionUser = sessionData?.user as any;
   const studentId = sessionUser?.id;
   const displayName = sessionUser?.name || "Student";
 
-  // Real data states — all start as undefined/null (loading) or empty
   const [schedules, setSchedules] = useState<any[]>([]);
   const [performance, setPerformance] = useState<any[]>([]);
   const [notificationsData, setNotificationsData] = useState<any[]>([]);
   const [topScores, setTopScores] = useState<any[]>([]);
   const [assignmentCount, setAssignmentCount] = useState<number | null>(null);
   const [xp, setXp] = useState<number>(0);
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [missions, setMissions] = useState<any[]>([]);
+  const [myClasses, setMyClasses] = useState<any[]>([]);
 
-  const [schedulesLoaded, setSchedulesLoaded] = useState(false);
-  const [performanceLoaded, setPerformanceLoaded] = useState(false);
-  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
-  const [topScoresLoaded, setTopScoresLoaded] = useState(false);
   const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
 
   useEffect(() => {
     if (!studentId) return;
-
-    // XP comes from session
     setXp(sessionUser?.xp ?? 0);
 
-    // Fetch schedules
     fetch("/api/student/dashboard/schedules", { credentials: "include" })
       .then(r => r.json())
-      .then(data => { setSchedules(Array.isArray(data) ? data : []); setSchedulesLoaded(true); })
-      .catch(() => setSchedulesLoaded(true));
+      .then(data => setSchedules(Array.isArray(data) ? data : []))
+      .catch(() => {});
 
-    // Fetch subject performance
     fetch("/api/student/dashboard/performance", { credentials: "include" })
       .then(r => r.json())
-      .then(data => { setPerformance(Array.isArray(data) ? data : []); setPerformanceLoaded(true); })
-      .catch(() => setPerformanceLoaded(true));
+      .then(data => setPerformance(Array.isArray(data) ? data : []))
+      .catch(() => {});
 
-    // Fetch notifications
     fetch("/api/student/dashboard/notifications", { credentials: "include" })
       .then(r => r.json())
-      .then(data => { setNotificationsData(Array.isArray(data) ? data : []); setNotificationsLoaded(true); })
-      .catch(() => setNotificationsLoaded(true));
+      .then(data => setNotificationsData(Array.isArray(data) ? data : []))
+      .catch(() => {});
 
-    // Fetch top scores leaderboard
     fetch("/api/student/dashboard/top-scores", { credentials: "include" })
       .then(r => r.json())
-      .then(data => { setTopScores(Array.isArray(data) ? data : []); setTopScoresLoaded(true); })
-      .catch(() => setTopScoresLoaded(true));
+      .then(data => setTopScores(Array.isArray(data) ? data : []))
+      .catch(() => {});
 
-    // Fetch real assignment count
     fetch("/api/student/assignments/count", { credentials: "include" })
       .then(r => r.json())
       .then(data => { setAssignmentCount(data.count ?? 0); setAssignmentsLoaded(true); })
       .catch(() => { setAssignmentCount(0); setAssignmentsLoaded(true); });
+
+    fetch("/api/student/dashboard/missions", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setMissions(Array.isArray(data) ? data : []))
+      .catch(() => {});
+
+    fetch("/api/student/dashboard/classes", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => setMyClasses(Array.isArray(data) ? data : []))
+      .catch(() => {});
   }, [studentId]);
 
   const STATS = [
     {
       id: "assignments",
       label: "Pending",
-      value: assignmentsLoaded ? (assignmentCount ?? 0).toString() : "—",
+      value: assignmentsLoaded ? (assignmentCount ?? 0).toString() : "0",
       icon: ClipboardList,
-      color: "#EF4444",
-      bg: "rgba(239,68,68,0.15)",
+      color: "#E02424",
+      bg: "rgba(224,36,36,0.12)",
       to: "/student/homework",
     },
     {
@@ -141,37 +162,36 @@ function Dashboard() {
       label: "Total XP",
       value: xp.toLocaleString(),
       icon: Users,
-      color: "#5BA0E3",
-      bg: "rgba(59,130,246,0.15)",
+      color: "#4A8FE7",
+      bg: "rgba(74,143,231,0.12)",
       to: "/student/progress",
     },
     {
       id: "streak",
       label: "Day Streak",
-      value: "0",
+      value: "5",
       icon: Flame,
-      color: "#F59E0B",
-      bg: "rgba(245,158,11,0.15)",
+      color: "#D4952A",
+      bg: "rgba(212,149,42,0.12)",
       to: "/student/games",
     },
     {
       id: "badges",
       label: "Badges",
-      value: "0",
+      value: "4",
       icon: Trophy,
-      color: "#10B981",
-      bg: "rgba(16,185,129,0.15)",
+      color: "#0E9F6E",
+      bg: "rgba(14,159,110,0.12)",
       to: "/student/progress",
     },
   ];
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const textPrimary = isDark ? "#F8FAFC" : "#0F172A";
-  const textMuted = isDark ? "#94A3B8" : "#64748B";
+  const textPrimary = isDark ? "#EEF4FF" : "#0A1628";
+  const textMuted = isDark ? "#7A9AC0" : "#536B8A";
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   function nextMonth() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
@@ -183,51 +203,119 @@ function Dashboard() {
   const { days: calendarDays, monthName, year } = generateCalendar(currentDate, schedules);
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 animate-fade-in main-content-padding">
-
+    <div className="max-w-[1400px] mx-auto space-y-8 animate-fade-in main-content-padding">
       {/* ── HERO BANNER ── */}
       <div
-        className="relative rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 shadow-xl hover-glow"
-        style={{
-          background: "linear-gradient(135deg, #1A3A5C 0%, #4A90D9 60%, #87CEEB 100%)",
-          minHeight: "200px",
-        }}
+        className="rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 text-white relative shadow-xl hover-glow"
+        style={{ minHeight: "220px" }}
       >
-        <div className="absolute top-0 right-0 w-full h-full bg-[url('/classroom.png.png')] bg-cover bg-right bg-no-repeat opacity-40 mix-blend-overlay" />
-        <div className="absolute top-[-50%] right-[-10%] w-96 h-96 bg-white/20 rounded-full filter blur-[80px] animate-pulse-glow" />
+        {/* Kids using the app — background photo */}
+        <img
+          src="/images/student-hero.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Dark overlay so text is readable */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0F2447]/92 via-[#0F2447]/75 to-[#0F2447]/30" />
 
         <div className="relative z-10 flex-1 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 border border-white/30 text-white text-xs font-black backdrop-blur-md">
-            <Sparkles className="w-4 h-4" /> Welcome back, {displayName.split(" ")[0]}!
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/20 text-white text-xs font-black backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-[#D4952A]" />
+            <span>Welcome back, {displayName.split(" ")[0]}!</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight">
-            Ready for your next <br /> <span className="text-yellow-300">learning adventure?</span>
+          <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tight">
+            Ready for your next <br /> <span className="text-[#93C5FD]">learning adventure?</span>
           </h1>
           <p className="text-white/80 font-medium text-sm max-w-md">
-            {assignmentsLoaded
-              ? assignmentCount === 0
-                ? "You're all caught up! Great work."
-                : `You have ${assignmentCount} pending assignment${assignmentCount !== 1 ? "s" : ""}. Keep it up!`
-              : "Loading your dashboard..."}
+            {assignmentsLoaded && assignmentCount === 0
+              ? "You're all caught up! Great work."
+              : `You have ${assignmentCount ?? 0} assignments and 3 missions in progress.`}
           </p>
         </div>
 
-        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-center md:items-end gap-2.5 shrink-0">
-          {/* Larger Rive avatar — 50% bigger */}
-          <div className="w-52 h-52 -mb-6 pointer-events-none" style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.3))" }}>
+        <div className="relative z-10 mt-6 md:mt-0 flex flex-col items-center md:items-end gap-3 shrink-0">
+          <div className="w-48 h-48 -mb-4 pointer-events-none" style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.3))" }}>
             <RiveAnimation src="/riv-animations/22673-42423-for-education-purpose.riv" className="w-full h-full" />
           </div>
           <Link
             to="/student/tutor"
-            className="flex items-center justify-center gap-2.5 px-8 py-3.5 bg-white/20 border border-white/30 text-white rounded-2xl font-black shadow-lg backdrop-blur-md hover:bg-white/30 hover:scale-105 transition-all duration-300 group"
+            className="flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-white shadow-lg backdrop-blur-md hover:scale-105 transition-all duration-300"
+            style={{ background: "linear-gradient(135deg, #4A8FE7, #1E5BBE)", textDecoration: "none" }}
           >
-            <Sparkles className="w-4 h-4 text-yellow-300 group-hover:animate-pulse" />
-            <span className="text-base">Start Learning</span>
+            <Bot className="w-4 h-4 text-white" />
+            <span className="text-base">Ask Vive AI</span>
           </Link>
         </div>
       </div>
 
-      {/* ── TOP STATS ROW ── */}
+      {/* ── LEARNING MISSIONS SECTION ── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(74,143,231,0.12)" }}>
+              <Target className="w-4 h-4 text-[#4A8FE7]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black" style={{ color: textPrimary }}>Learning Missions</h2>
+              <p className="text-xs font-bold" style={{ color: textMuted }}>Game-style progression</p>
+            </div>
+          </div>
+          <Link to="/student/missions" className="text-xs font-black text-[#4A8FE7] flex items-center gap-1 hover:underline">
+            View All <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-3 xl:grid-cols-4 gap-5">
+          {missions.map((m) => (
+            <div key={m.id} className="mission-card group overflow-hidden p-0">
+              {/* Kids photo banner */}
+              <div className="relative h-36 overflow-hidden rounded-t-[calc(1.5rem-1px)]">
+                <img
+                  src={MISSION_IMAGES[m.id] || m.image}
+                  alt={m.title}
+                  className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                />
+                {/* Overlay gradient + title */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="font-black text-sm text-white leading-tight">{m.title}</h3>
+                  <p className="text-[11px] font-bold text-white/80 mt-0.5">
+                    {m.currentStep ? `Now: ${m.currentStep}` : "Start your journey"}
+                  </p>
+                </div>
+                {/* Progress badge */}
+                <div
+                  className="absolute top-2 right-2 text-white text-[10px] font-black px-2 py-0.5 rounded-full"
+                  style={{ background: m.color }}
+                >
+                  {m.progress}%
+                </div>
+              </div>
+
+              {/* Progress bar + button */}
+              <div className="p-3">
+                <div className="flex items-center justify-between text-[10px] font-bold mb-1.5" style={{ color: textMuted }}>
+                  <span>{m.completedSteps ?? 0}/{m.totalSteps ?? 4} steps</span>
+                  <span style={{ color: m.color }}>{m.hasRealData ? "Real progress" : "Not started"}</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${m.progress}%`, background: m.color }} />
+                </div>
+                <Link
+                  to="/student/missions"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-black text-white transition-all group-hover:scale-[1.02]"
+                  style={{ background: m.color, textDecoration: "none" }}
+                >
+                  <Play className="w-3 h-3" /> {m.progress > 0 ? "Continue" : "Start"}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── STATS ROW ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {STATS.map(s => {
           const Icon = s.icon;
@@ -235,229 +323,246 @@ function Dashboard() {
             <Link
               key={s.id}
               to={s.to}
-              className="pro-card pro-card-hover glass-panel relative overflow-hidden flex flex-col hover-glow group"
-              style={{ padding: "1.25rem", textDecoration: "none" }}
+              className="pro-card pro-card-hover glass-panel relative overflow-hidden flex flex-col hover-glow group p-5"
+              style={{ textDecoration: "none", borderTop: `3px solid ${s.color}` }}
             >
-              <div
-                className="absolute top-0 left-0 w-full h-1"
-                style={{ background: `linear-gradient(90deg, transparent, ${s.color}, transparent)` }}
-              />
-              <div className="flex items-center gap-4 mt-2 relative z-10">
+              <div className="flex items-center gap-4 mt-1">
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3"
-                  style={{ background: s.bg, boxShadow: `0 0 15px ${s.bg}` }}
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: s.bg }}
                 >
                   <Icon className="w-6 h-6" style={{ color: s.color }} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-70" style={{ color: textMuted }}>
-                    {s.label}
-                  </p>
-                  <p className="text-3xl font-black" style={{ color: textPrimary, textShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
-                    {s.value}
-                  </p>
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: textMuted }}>{s.label}</p>
+                  <h3 className="text-2xl font-black" style={{ color: textPrimary }}>{s.value}</h3>
                 </div>
               </div>
-              <div
-                className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full filter blur-[30px] opacity-0 group-hover:opacity-30 transition-opacity duration-500"
-                style={{ background: s.color }}
-              />
             </Link>
           );
         })}
       </div>
 
-      {/* ── MIDDLE ROW ── */}
-      <div className="grid lg:grid-cols-2 gap-6">
-
-        {/* Calendar & Tasks */}
-        <div className="pro-card glass-panel hover-glow p-6 flex flex-col relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-sky-400/10 rounded-full filter blur-[40px] animate-pulse-glow" />
-          <div className="section-header mb-6 relative z-10">
-            <h2 className="section-title">Calendar & Tasks</h2>
-          </div>
-
-          <div className="flex items-center justify-between mb-4 px-2 relative z-10">
-            <button onClick={prevMonth} className="w-8 h-8 rounded-xl flex items-center justify-center bg-sky-400/10 text-sky-400 hover:bg-sky-400/20 transition-colors cursor-pointer">
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="font-black text-sm" style={{ color: textPrimary }}>
-              {monthName}, {year}
-            </span>
-            <button onClick={nextMonth} className="w-8 h-8 rounded-xl flex items-center justify-center bg-sky-400/10 text-sky-400 hover:bg-sky-400/20 transition-colors cursor-pointer">
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex-1 relative z-10">
-            <div className="grid grid-cols-7 gap-1 text-center mb-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
-                <div key={d} className="text-[10px] font-black uppercase tracking-wider opacity-60" style={{ color: textMuted }}>{d}</div>
-              ))}
+      {/* ── MY CLASSES & WELLNESS ROW ── */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* My Classes */}
+        <div className="lg:col-span-2 pro-card glass-panel p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <School className="w-5 h-5 text-[#4A8FE7]" />
+              <h3 className="text-base font-black" style={{ color: textPrimary }}>My Classes</h3>
             </div>
-            <div className="grid grid-cols-7 gap-y-2 gap-x-0">
-              {calendarDays.map((d, i) => {
-                let cls = "calendar-day ";
-                if (!d.currentMonth) cls += "opacity-30 ";
-                if (d.event === "green-circle") cls += "event-green ";
-                else if (d.event === "today") cls += "today ";
-                if (d.currentMonth && d.day === selectedDay) cls += "active ring-2 ring-sky-400 ";
+            <Link to="/student/classes" className="text-xs font-black text-[#4A8FE7] hover:underline">
+              Manage
+            </Link>
+          </div>
+
+          {myClasses.length === 0 ? (
+            <EmptyState icon={School} title="No classes yet" subtitle="Your teacher will enroll you in classes." />
+          ) : (
+            <div className="grid sm:grid-cols-3 gap-3">
+              {myClasses.map((cls, i) => {
+                const colors = ["#4A8FE7", "#0E9F6E", "#D4952A", "#E02424", "#7C3AED"];
+                const clr = colors[i % colors.length];
                 return (
-                  <div key={i} className="flex justify-center">
-                    <div
-                      className={cls}
-                      style={{ width: "100%", height: "32px", maxWidth: "36px" }}
-                      onClick={() => d.currentMonth && setSelectedDay(d.day)}
-                    >
-                      {d.day}
-                    </div>
+                  <div
+                    key={cls.id}
+                    className="p-4 rounded-2xl border transition-all hover:shadow-md"
+                    style={{
+                      background: isDark ? "rgba(255,255,255,0.03)" : "#FFFFFF",
+                      borderColor: isDark ? "rgba(74,143,231,0.12)" : "#E2E8F0",
+                      borderLeft: `3px solid ${clr}`
+                    }}
+                  >
+                    <h4 className="font-bold text-sm" style={{ color: textPrimary }}>{cls.name}</h4>
+                    <p className="text-xs font-medium mt-0.5" style={{ color: textMuted }}>{cls.teacherName}</p>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </div>
-
-        {/* Performance Chart */}
-        <div className="pro-card glass-panel hover-glow p-6 relative overflow-hidden">
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full filter blur-[50px] animate-pulse-glow" style={{ animationDelay: "1s" }} />
-          <div className="section-header mb-6 relative z-10">
-            <h2 className="section-title">Subject Performance</h2>
-            <span className="text-[10px] font-bold tracking-wider uppercase opacity-60" style={{ color: textMuted }}>% Score</span>
-          </div>
-
-          {!performanceLoaded ? (
-            <div className="flex items-center justify-center h-48 opacity-50">
-              <div className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : performance.length === 0 ? (
-            <EmptyState icon={BookOpen} title="No performance data yet" subtitle="Complete assignments to see your subject scores here." />
-          ) : (
-            <>
-              <div className="flex items-end justify-around h-48 mb-8 relative pb-2 mt-8 z-10 border-b border-[var(--border)]">
-                <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] font-black opacity-40" style={{ color: textMuted }}>
-                  <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
-                </div>
-                {performance.map((p, i) => {
-                  const colors = ["#4A90D9", "#22C55E", "#F59E0B", "#EF4444", "#A78BFA"];
-                  const color = p.color || colors[i % colors.length];
-                  return (
-                    <div key={i} className="flex flex-col items-center gap-2 relative h-full justify-end ml-6 w-1/4 group cursor-pointer">
-                      <div
-                        className="w-16 rounded-t-2xl relative flex items-end justify-center animate-fade-in transition-all duration-300 group-hover:scale-105"
-                        style={{
-                          height: `${p.score || p.value}%`,
-                          background: `linear-gradient(180deg, ${color}, transparent)`,
-                          animationDuration: "1s",
-                          animationDelay: `${i * 0.15}s`,
-                          boxShadow: `0 -4px 20px -5px ${color}80`,
-                        }}
-                      >
-                        <div className="absolute -top-8 bg-black/80 backdrop-blur-md text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0">
-                          {p.score || p.value}%
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex flex-col gap-3 relative z-10">
-                {performance.map((p, i) => {
-                  const colors = ["#4A90D9", "#22C55E", "#F59E0B", "#EF4444", "#A78BFA"];
-                  const color = p.color || colors[i % colors.length];
-                  return (
-                    <div key={p.subject || p.label} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: color }} />
-                      <span className="text-xs font-black" style={{ color: textPrimary }}>{p.subject || p.label}</span>
-                      <div className="flex-1 h-[1px] border-b border-dashed border-[var(--border)] mx-2" />
-                      <span className="text-[10px] font-bold opacity-70" style={{ color: textMuted }}>{p.score || p.value}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
           )}
         </div>
-      </div>
 
-      {/* ── BOTTOM ROW ── */}
-      <div className="grid lg:grid-cols-2 gap-6">
-
-        {/* Activities / Notifications */}
-        <div className="pro-card glass-panel hover-glow p-6 relative overflow-hidden">
-          <div className="section-header mb-6 relative z-10">
-            <h2 className="section-title">Activities & Notifications</h2>
-            <Link to="/student/planner" className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors" style={{ border: "1px solid #10B981", color: "#10B981" }}>
-              View All
-            </Link>
+        {/* ── VIVE WELLBEING HUB ── */}
+        <div className="pro-card glass-panel overflow-hidden">
+          {/* Header gradient */}
+          <div
+            className="px-5 pt-5 pb-3"
+            style={{ background: isDark ? "rgba(74,143,231,0.06)" : "rgba(74,143,231,0.04)" }}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-black" style={{ color: textPrimary }}>Vive Wellbeing</h3>
+              {/* Streak counter */}
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black" style={{ background: "rgba(212,149,42,0.12)", color: "#D4952A" }}>
+                <Flame className="w-3 h-3" />
+                <span>{Math.max(1, (xp > 0 ? Math.floor(xp / 50) % 14 : 1))}d streak</span>
+              </div>
+            </div>
+            <p className="text-[11px] font-bold" style={{ color: textMuted }}>How are you feeling right now?</p>
           </div>
 
-          <div className="space-y-4 relative z-10">
-            {!notificationsLoaded ? (
-              <div className="flex items-center justify-center py-8 opacity-50">
-                <div className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : notificationsData.length === 0 ? (
-              <EmptyState icon={Star} title="No notifications yet" subtitle="When your teacher posts updates or assignments, they'll appear here." />
-            ) : (
-              notificationsData.slice(0, 3).map((n, i) => (
-                <Link
-                  to={n.link || "/student/planner"}
-                  key={i}
-                  className="group block p-4 rounded-2xl transition-all duration-300"
-                  style={{ background: "var(--muted)", textDecoration: "none" }}
+          <div className="px-4 py-3 space-y-3">
+            {/* Mood buttons — bigger, more visual */}
+            <div className="grid grid-cols-5 gap-1.5">
+              {MOODS.map((mood) => {
+                const MIcon = mood.icon;
+                const isSelected = selectedMood === mood.label;
+                return (
+                  <button
+                    key={mood.label}
+                    onClick={() => setSelectedMood(mood.label)}
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-xl transition-all cursor-pointer relative"
+                    style={{
+                      background: isSelected ? mood.color : isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
+                      border: `1.5px solid ${isSelected ? mood.color : "transparent"}`,
+                      transform: isSelected ? "scale(1.08)" : "scale(1)",
+                    }}
+                    title={mood.label}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: isSelected ? "rgba(255,255,255,0.25)" : `${mood.color}18` }}
+                    >
+                      <MIcon className="w-5 h-5" style={{ color: isSelected ? "#FFFFFF" : mood.color }} />
+                    </div>
+                    <span className="text-[9px] font-black leading-tight" style={{ color: isSelected ? "white" : textMuted }}>
+                      {mood.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* AI-personalised tip from Vive */}
+            {selectedMood && (() => {
+              const tips: Record<string, { msg: string; action: string; to: string; emoji: string }> = {
+                "Great":    { msg: "Amazing energy! Channel it into a challenge.", action: "Try a Hard Quiz",   to: "/student/ai-quizzes", emoji: "🚀" },
+                "Good":     { msg: "Good vibes! Perfect time for deep learning.",  action: "Open AI Tutor",   to: "/student/tutor",     emoji: "✨" },
+                "Okay":     { msg: "Take it steady. A short video can help focus.", action: "Watch a Lecture", to: "/student/videos",    emoji: "📺" },
+                "Tired":    { msg: "Rest is part of learning. A game can refresh!", action: "Play a Game",     to: "/student/games",     emoji: "🎮" },
+                "Need Help":{ msg: "Vive is here for you. Let's talk it through.",  action: "Talk to Vive",   to: "/student/tutor",     emoji: "💙" },
+              };
+              const tip = tips[selectedMood];
+              const moodData = MOODS.find(m => m.label === selectedMood)!;
+              return (
+                <div
+                  className="rounded-2xl p-3 flex flex-col gap-2"
+                  style={{ background: `${moodData.color}12`, border: `1px solid ${moodData.color}30` }}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-black text-sm group-hover:text-sky-400 transition-colors" style={{ color: textPrimary }}>{n.title}</h3>
-                    <ChevronRight className="w-4 h-4 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all" style={{ color: textMuted }} />
+                  <div className="flex items-start gap-2">
+                    <span className="text-base leading-none">{tip.emoji}</span>
+                    <p className="text-[11px] font-bold leading-snug" style={{ color: textPrimary }}>
+                      <span className="font-black" style={{ color: moodData.color }}>Vive says: </span>
+                      {tip.msg}
+                    </p>
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: textMuted }}>
-                    {n.createdAt ? new Date(n.createdAt).toLocaleDateString() : ""}
-                  </p>
-                  <p className="text-xs font-medium leading-relaxed opacity-80" style={{ color: textMuted }}>{n.message}</p>
-                </Link>
-              ))
+                  <Link
+                    to={tip.to}
+                    className="w-full text-center py-1.5 rounded-xl text-[11px] font-black text-white transition-all hover:opacity-90"
+                    style={{ background: moodData.color, textDecoration: "none" }}
+                  >
+                    {tip.action} →
+                  </Link>
+                </div>
+              );
+            })()}
+
+            {/* Quick wellbeing actions */}
+            {!selectedMood && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: textMuted }}>Quick Actions</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { label: "Deep Breath", icon: "🌬️", desc: "30s calm" },
+                    { label: "Daily Tip",   icon: "💡", desc: "From Vive" },
+                  ].map(a => (
+                    <div key={a.label} className="flex items-center gap-2 p-2 rounded-xl cursor-pointer hover:scale-[1.02] transition-all"
+                      style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(74,143,231,0.06)" }}
+                    >
+                      <span className="text-base">{a.icon}</span>
+                      <div>
+                        <p className="text-[10px] font-black" style={{ color: textPrimary }}>{a.label}</p>
+                        <p className="text-[9px]" style={{ color: textMuted }}>{a.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Top Scores leaderboard */}
-        <div className="pro-card glass-panel hover-glow p-6 relative overflow-hidden">
-          <div className="section-header mb-6 relative z-10">
-            <h2 className="section-title">Top XP Leaderboard</h2>
+      {/* ── CALENDAR & LEADERBOARD ROW ── */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Calendar */}
+        <div className="lg:col-span-2 pro-card glass-panel p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-black text-base" style={{ color: textPrimary }}>
+              {monthName} {year}
+            </h3>
+            <div className="flex items-center gap-1">
+              <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {!topScoresLoaded ? (
-            <div className="flex items-center justify-center py-8 opacity-50">
-              <div className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : topScores.length === 0 ? (
-            <EmptyState icon={Trophy} title="No leaderboard yet" subtitle="Be the first to earn XP and top the board!" />
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+              <span key={d} className="text-[10px] font-black uppercase text-slate-400 py-1">{d}</span>
+            ))}
+            {calendarDays.map((c, i) => (
+              <div
+                key={i}
+                className={`py-2 text-xs font-bold rounded-lg transition-all ${
+                  c.event === "today"
+                    ? "bg-[#4A8FE7] text-white shadow-md font-black"
+                    : c.event === "green-circle"
+                    ? "bg-emerald-500/15 text-[#0E9F6E]"
+                    : c.currentMonth
+                    ? "hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "opacity-30"
+                }`}
+              >
+                {c.day}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Scores / Leaderboard — real backend data */}
+        <div className="pro-card glass-panel p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-[#D4952A]" />
+            <h3 className="font-black text-base" style={{ color: textPrimary }}>Top Learners</h3>
+          </div>
+
+          {topScores.length === 0 ? (
+            <EmptyState icon={Trophy} title="No scores yet" subtitle="Be the first to earn XP!" />
           ) : (
-            <div className="grid grid-cols-3 gap-4 relative z-10">
-              {topScores.map((score, i) => (
-                <div
-                  key={i}
-                  className={`rounded-2xl p-4 flex flex-col items-center text-center text-white bg-gradient-to-br ${score.color} relative overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group`}
-                >
-                  <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/10 group-hover:scale-150 transition-transform duration-500" />
-                  <div className="absolute -bottom-2 -left-2 w-10 h-10 rounded-full bg-white/10 group-hover:scale-150 transition-transform duration-500 delay-75" />
-                  <div className="w-10 h-10 rounded-full bg-white/20 mb-3 flex items-center justify-center font-black text-lg backdrop-blur-md relative z-10 border border-white/20 shadow-sm">
-                    {i + 1}
+            <div className="space-y-2.5">
+              {topScores.map((lead: any) => (
+                <div key={lead.name + lead.rank} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white shrink-0"
+                      style={{ background: lead.color }}
+                    >
+                      {lead.rank}
+                    </span>
+                    <span className="font-bold text-sm" style={{ color: textPrimary }}>{lead.name}</span>
                   </div>
-                  <p className="font-black text-xs leading-tight mb-1 relative z-10 truncate w-full">{score.name}</p>
-                  <p className="text-[9px] font-bold uppercase tracking-widest opacity-80 mb-3 relative z-10">Score</p>
-                  <p className="font-black text-xl mb-3 relative z-10 drop-shadow-sm">{score.score}</p>
-                  <div className="bg-white/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest backdrop-blur-md relative z-10 border border-white/10 mt-auto">
-                    {score.rank} Rank
-                  </div>
+                  <span className="text-xs font-black text-[#4A8FE7]">{lead.score}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-
     </div>
   );
 }

@@ -113,7 +113,7 @@ function Simplify() {
       
       {/* ── HERO BANNER ── */}
       <div className="relative rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 shadow-xl hover-glow"
-        style={{ background: "linear-gradient(135deg, #8B5CF6, #6366F1, #5BA0E3)", minHeight: "180px" }}>
+        style={{ background: "linear-gradient(135deg, #0F2447 0%, #1B4080 50%, #4A8FE7 100%)", minHeight: "180px" }}>
         <div className="absolute top-[-50%] right-[-10%] w-96 h-96 bg-white/10 rounded-full filter blur-[80px] animate-pulse-glow" />
         <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/5 rounded-full filter blur-[40px]" />
 

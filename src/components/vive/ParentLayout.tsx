@@ -2,7 +2,8 @@ import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-route
 import { Logo } from "./Logo";
 import { AccessibilityBar, AvatarMuteProvider } from "./AccessibilityBar";
 import {
-  LogOut, Menu, Home, MessageSquare, Calendar, Bell, Search, ChevronRight, User, ChevronLeft
+  LogOut, Menu, Home, MessageSquare, Calendar, Bell, Search, ChevronRight, User, ChevronLeft,
+  Sun, Moon
 } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useEffect, useState } from "react";
@@ -13,14 +14,13 @@ type NavItem = {
   to: string;
   label: string;
   icon: any;
-  emoji: string;
   exact?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/parent",            label: "Dashboard",  exact: true, icon: Home,          emoji: "🏠" },
-  { to: "/parent/messages",   label: "Messages",   icon: MessageSquare,              emoji: "💬" },
-  { to: "/parent/attendance",  label: "Attendance", icon: Calendar,                   emoji: "📅" },
+  { to: "/parent",            label: "Dashboard",  exact: true, icon: Home },
+  { to: "/parent/messages",   label: "Messages",                icon: MessageSquare },
+  { to: "/parent/attendance",  label: "Attendance",              icon: Calendar },
 ];
 
 export function ParentLayout() {
@@ -29,8 +29,6 @@ export function ParentLayout() {
   const { theme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { data: session } = useSession();
-  const [notificationsList, setNotificationsList] = useState<any[]>([]);
-  const [showNotif, setShowNotif] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("parent_sidebar_collapsed") === "true";
@@ -46,6 +44,8 @@ export function ParentLayout() {
     });
   };
 
+  useEffect(() => { setMounted(true); }, []);
+
   if (!session?.user) return null;
 
   const parentUser = {
@@ -59,63 +59,26 @@ export function ParentLayout() {
     navigate({ to: "/login" });
   };
 
-  useEffect(() => {
-    setMounted(true);
-    // Fetch notifications
-    const fetchNotifications = async () => {
-      try {
-        const res = await fetch("/api/notifications");
-        if (res.ok) {
-          const data = await res.json();
-          setNotificationsList(data);
-        }
-      } catch (err) {
-        console.warn("Failed to fetch parent notifications", err);
-      }
-    };
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000);
-    return () => clearInterval(interval);
-  }, [parentUser.id]);
-
-  const unreadCount = notificationsList.filter(n => !n.isRead).length;
-
-  const handleClearNotif = async (id: string) => {
-    try {
-      await fetch(`/api/notifications/${id}/read`, { method: "PATCH" });
-      setNotificationsList(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const isDark = mounted && theme === "dark";
 
   const navBg = isDark
-    ? "linear-gradient(180deg, #111827 0%, #1f2937 50%, #111827 100%)"
-    : "linear-gradient(180deg, #065F46 0%, #047857 50%, #065F46 100%)";
+    ? "linear-gradient(180deg, #060E1C 0%, #0A1628 50%, #060E1C 100%)"
+    : "linear-gradient(180deg, #0F2447 0%, #132D5E 50%, #0F2447 100%)";
 
-  const mainBg = isDark ? "#0B1329" : "#F0FDF4";
-  const headerBg = isDark ? "rgba(11,19,41,0.9)" : "rgba(240,253,244,0.92)";
-  const headerBorder = isDark ? "1px solid rgba(16,185,129,0.12)" : "1px solid rgba(16,185,129,0.15)";
-  const searchBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.95)";
-  const searchBorder = isDark ? "1px solid rgba(16,185,129,0.15)" : "1px solid #D1FAE5";
-  const textPrimary = isDark ? "#F3F4F6" : "#065F46";
-  const textMuted = isDark ? "#9CA3AF" : "#6B7280";
-  const drawerBg = isDark ? "#1F2937" : "#FFFFFF";
+  const mainBg = isDark ? "#060E1C" : "#F7F9FD";
+  const headerBg = isDark ? "rgba(6,14,28,0.94)" : "rgba(247,249,253,0.94)";
+  const headerBorder = isDark ? "1px solid rgba(74,143,231,0.12)" : "1px solid #D6E2F5";
 
   return (
     <AvatarMuteProvider>
       <div
         className={`h-screen w-full flex overflow-hidden ${!mounted ? "opacity-0" : "opacity-100 transition-opacity duration-300"}`}
-        style={{ background: mainBg, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        style={{ background: mainBg }}
       >
-        {/* ════ SIDEBAR (DESKTOP) ════ */}
+        {/* ── SIDEBAR (DESKTOP) ── */}
         <aside className={`hidden lg:flex flex-col h-full shrink-0 relative z-20 transition-all duration-300 ${isCollapsed ? "w-[72px]" : "w-[235px]"}`}>
           <div className="absolute inset-0" style={{ background: navBg }} />
-          {/* Glow Orbs */}
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full opacity-15 blur-[60px]" style={{ background: "#10B981" }} />
-          <div className="absolute bottom-28 -left-8 w-32 h-32 rounded-full opacity-10 blur-[50px]" style={{ background: "#34D399" }} />
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full opacity-15 blur-[60px] bg-[#4A8FE7]" />
 
           {/* Collapse/Expand Floating Button */}
           <button
@@ -126,7 +89,7 @@ export function ParentLayout() {
           </button>
 
           {/* Logo */}
-          <div className="relative z-10 h-[68px] px-4 flex items-center shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="relative z-10 h-[68px] px-4 flex items-center shrink-0 border-b border-white/10">
             {!isCollapsed ? (
               <Logo size={28} lightBg={false} />
             ) : (
@@ -138,73 +101,58 @@ export function ParentLayout() {
 
           {/* Parent card */}
           {!isCollapsed ? (
-            <div className="relative z-10 mx-3 mt-4 mb-3 rounded-2xl p-3.5 flex items-center gap-3 transition-all duration-300"
-              style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)" }}>
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 shadow-lg"
-                style={{ background: "linear-gradient(135deg, #10B981, #065F46)" }}
-              >
-                {parentUser.name[0]}
+            <div className="relative z-10 mx-3 mt-4 mb-3 rounded-2xl p-3.5 flex items-center gap-3 bg-white/10 border border-white/15">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 shadow-lg bg-linear-to-br from-[#4A8FE7] to-[#0F2447]">
+                {parentUser.name[0]?.toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-white text-sm font-black leading-tight truncate">{parentUser.name}</p>
-                <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>Parent Account</p>
+                <p className="text-[10px] text-white/60 truncate mt-0.5">{parentUser.email}</p>
               </div>
             </div>
           ) : (
-            <div className="relative z-10 mx-auto mt-4 mb-3 flex items-center justify-center transition-all duration-300">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 shadow-lg"
-                style={{ background: "linear-gradient(135deg, #10B981, #065F46)" }}
-                title={`${parentUser.name} (Parent)`}
-              >
-                {parentUser.name[0]}
+            <div className="relative z-10 mx-auto mt-4 mb-3 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-base shrink-0 bg-linear-to-br from-[#4A8FE7] to-[#0F2447]">
+                {parentUser.name[0]?.toUpperCase()}
               </div>
             </div>
           )}
 
           {/* Navigation */}
-          <nav className={`relative z-10 flex-1 overflow-y-auto py-1 space-y-0.5 ${isCollapsed ? "px-1.5" : "px-2.5"}`}>
-            {!isCollapsed ? (
-              <p className="px-3 mb-2 mt-1 text-[9px] font-black uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.28)" }}>Parent Tools</p>
-            ) : (
-              <div className="h-px my-3 mx-2 bg-white/10" />
-            )}
+          <nav className={`relative z-10 flex-1 overflow-y-auto py-2 space-y-1 ${isCollapsed ? "px-1.5" : "px-3"}`}>
             {NAV_ITEMS.map((n) => {
               const active = n.exact ? path === n.to : path.startsWith(n.to);
               const Icon = n.icon;
               return (
                 <Link
-                  key={n.to} to={n.to}
+                  key={n.to}
+                  to={n.to}
                   title={isCollapsed ? n.label : undefined}
-                  className={`flex items-center rounded-xl text-sm font-bold transition-all duration-200 relative ${isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"}`}
+                  className={`flex items-center rounded-xl text-sm font-bold transition-all relative ${
+                    isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"
+                  }`}
                   style={{
-                    background: active ? "rgba(16,185,129,0.22)" : "transparent",
-                    color: active ? "#A7F3D0" : "rgba(255,255,255,0.55)",
-                    border: active ? "1px solid rgba(16,185,129,0.35)" : "1px solid transparent",
+                    background: active ? "rgba(74,143,231,0.22)" : "transparent",
+                    color: active ? "#93C5FD" : "rgba(255,255,255,0.65)",
+                    border: active ? "1px solid rgba(74,143,231,0.35)" : "1px solid transparent",
                     textDecoration: "none",
                   }}
-                  onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)"; } }}
-                  onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; } }}
                 >
-                  {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: "#10B981" }} />}
+                  {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full bg-[#4A8FE7]" />}
                   <Icon className="w-4 h-4 shrink-0" />
                   {!isCollapsed && <span>{n.label}</span>}
-                  {active && !isCollapsed && <ChevronRight className="w-3 h-3 ml-auto opacity-50" />}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Sidebar footer */}
-          <div className="relative z-10 p-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          {/* Footer */}
+          <div className="relative z-10 p-3 border-t border-white/10">
             <button
               onClick={handleSignOut}
-              title={isCollapsed ? "Sign Out" : undefined}
-              className={`flex items-center rounded-xl text-sm font-bold transition-all ${isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"}`}
-              style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)"; (e.currentTarget as HTMLElement).style.color = "#FCA5A5"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)"; }}
+              className={`w-full flex items-center rounded-xl text-sm font-bold text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-all ${
+                isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"
+              } cursor-pointer border-none bg-transparent`}
             >
               <LogOut className="w-4 h-4 shrink-0" />
               {!isCollapsed && <span>Sign Out</span>}
@@ -212,9 +160,8 @@ export function ParentLayout() {
           </div>
         </aside>
 
-        {/* ════ MAIN CONTENT ════ */}
-        <div className="flex-1 flex flex-col h-full min-w-0" style={{ background: mainBg }}>
-          {/* TOP HEADER */}
+        {/* ── MAIN CONTENT ── */}
+        <div className="flex-1 flex flex-col h-full min-w-0">
           <header
             className="h-[68px] shrink-0 flex items-center justify-between px-6 z-10"
             style={{ background: headerBg, backdropFilter: "blur(16px)", borderBottom: headerBorder }}
@@ -223,151 +170,34 @@ export function ParentLayout() {
               <div className="lg:hidden">
                 <Logo size={26} lightBg={!isDark} />
               </div>
-              <div
-                className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-2xl flex-1 max-w-sm"
-                style={{ background: searchBg, border: searchBorder }}
-              >
-                <Search className="w-4 h-4 shrink-0" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "#6B7280" }} />
-                <input
-                  type="text" placeholder="Search children, messages..."
-                  className="bg-transparent border-none outline-none text-sm flex-1"
-                  style={{ color: textPrimary, fontFamily: "inherit" }}
-                />
-              </div>
+              <span className="hidden sm:inline-block text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full bg-blue-500/10 text-[#4A8FE7]">
+                Parent Portal
+              </span>
             </div>
 
-            {/* Right Controls */}
-            <div className="flex items-center gap-2 shrink-0 relative">
-              <button
-                onClick={() => setShowNotif(!showNotif)}
-                className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all bg-white hover:bg-emerald-50 border border-emerald-100"
-                style={{
-                  background: isDark ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.9)",
-                  border: isDark ? "1px solid rgba(16,185,129,0.15)" : "1px solid #D1FAE5"
-                }}
-              >
-                <Bell className="w-4 h-4" style={{ color: isDark ? "rgba(255,255,255,0.6)" : "#047857" }} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full border-2"
-                    style={{ background: "#EF4444", borderColor: isDark ? "#0B1329" : "#F0FDF4" }} />
-                )}
-              </button>
-
-              {/* Notifications Dropdown */}
-              {showNotif && (
-                <div
-                  className="absolute right-0 top-12 w-80 rounded-2xl p-4 shadow-2xl z-50 border max-h-96 overflow-y-auto"
-                  style={{
-                    background: isDark ? "#1F2937" : "#FFFFFF",
-                    borderColor: isDark ? "rgba(16,185,129,0.2)" : "#D1FAE5"
-                  }}
-                >
-                  <h4 className="font-black text-sm mb-3" style={{ color: textPrimary }}>Notifications</h4>
-                  {notificationsList.length === 0 ? (
-                    <p className="text-xs text-center py-6" style={{ color: textMuted }}>No notifications yet</p>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {notificationsList.map(n => (
-                        <div
-                          key={n.id}
-                          onClick={() => handleClearNotif(n.id)}
-                          className="p-2.5 rounded-xl text-xs cursor-pointer border hover:bg-emerald-50/10 transition-colors"
-                          style={{
-                            borderColor: n.isRead ? "transparent" : "rgba(16,185,129,0.3)",
-                            background: n.isRead ? "transparent" : "rgba(16,185,129,0.05)"
-                          }}
-                        >
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="font-bold" style={{ color: textPrimary }}>{n.title}</span>
-                            {!n.isRead && <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />}
-                          </div>
-                          <p className="font-medium" style={{ color: textMuted }}>{n.message}</p>
-                          <p className="text-[10px] mt-1 text-slate-400">{new Date(n.createdAt).toLocaleDateString()}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
+            <div className="flex items-center gap-2">
               <button
                 onClick={toggleTheme}
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all text-lg"
-                style={{
-                  background: isDark ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.9)",
-                  border: isDark ? "1px solid rgba(16,185,129,0.15)" : "1px solid #D1FAE5"
-                }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer"
+                style={{ background: isDark ? "rgba(74,143,231,0.08)" : "#FFFFFF", border: isDark ? "1px solid rgba(74,143,231,0.15)" : "1px solid #D6E2F5" }}
                 title="Toggle theme"
               >
-                {isDark ? "🌙" : "☀️"}
+                {isDark ? <Moon className="w-4 h-4 text-[#93C5FD]" /> : <Sun className="w-4 h-4 text-[#D4952A]" />}
               </button>
 
-              <div className="w-px h-6 mx-1" style={{ background: isDark ? "rgba(16,185,129,0.2)" : "#D1FAE5" }} />
+              <div className="w-px h-6 mx-1" style={{ background: isDark ? "rgba(74,143,231,0.2)" : "#D6E2F5" }} />
 
-              <div className="flex items-center gap-2.5">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-black leading-none" style={{ color: textPrimary }}>{parentUser.name}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>Guardian Account</p>
-                </div>
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0 shadow-md"
-                  style={{ background: "linear-gradient(135deg, #10B981, #065F46)" }}
-                >
-                  {parentUser.name[0]}
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-sm bg-linear-to-br from-[#4A8FE7] to-[#0F2447]">
+                  {parentUser.name[0]?.toUpperCase()}
                 </div>
               </div>
             </div>
           </header>
 
-          {/* PAGE CONTENT */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 pb-28 lg:pb-10">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 pb-24 lg:pb-10">
             <Outlet />
           </main>
-        </div>
-
-        {/* ════ MOBILE BOTTOM NAV ════ */}
-        <div
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-50"
-          style={{
-            background: isDark ? "rgba(17,24,39,0.97)" : "rgba(255,255,255,0.97)",
-            backdropFilter: "blur(20px)",
-            borderTop: isDark ? "1px solid rgba(16,185,129,0.12)" : "1px solid #D1FAE5",
-            paddingBottom: "env(safe-area-inset-bottom)",
-          }}
-        >
-          <div className="flex items-center justify-around px-2 py-1.5">
-            {NAV_ITEMS.map((n) => {
-              const active = n.exact ? path === n.to : path.startsWith(n.to);
-              const Icon = n.icon;
-              return (
-                <Link
-                  key={n.to} to={n.to}
-                  className="flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all"
-                  style={{ textDecoration: "none", minWidth: 56 }}
-                >
-                  <div
-                    className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
-                    style={{ background: active ? "rgba(16,185,129,0.15)" : "transparent" }}
-                  >
-                    <Icon className="w-5 h-5" style={{ color: active ? "#10B981" : (isDark ? "rgba(255,255,255,0.35)" : "#9CA3AF") }} />
-                  </div>
-                  <span className="text-[9px] font-black" style={{ color: active ? "#10B981" : (isDark ? "rgba(255,255,255,0.35)" : "#9CA3AF") }}>
-                    {n.label}
-                  </span>
-                </Link>
-              );
-            })}
-            <button
-              onClick={handleSignOut}
-              className="flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all"
-              style={{ textDecoration: "none", minWidth: 56 }}
-            >
-              <div className="w-8 h-8 flex items-center justify-center rounded-lg">
-                <LogOut className="w-5 h-5" style={{ color: "#EF4444" }} />
-              </div>
-              <span className="text-[9px] font-black text-red-500">Sign Out</span>
-            </button>
-          </div>
         </div>
 
         <AccessibilityBar />

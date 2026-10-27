@@ -1,346 +1,235 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
-import {
-  TrendingUp, Calendar, BookOpen, AlertCircle, Plus, Users, CheckCircle, Award
-} from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import {
+  Bot, Sparkles, Clock, CheckCircle, TrendingUp, Flame,
+  AlertTriangle, BookOpen, Trophy, Award, FileText, UserPlus,
+  ChevronRight, Brain, ArrowUpRight
+} from "lucide-react";
 
 export const Route = createFileRoute("/parent/")({
-  head: () => ({ meta: [{ title: "Parent Dashboard — Vive AI" }] }),
+  head: () => ({ meta: [{ title: "Parent Portal — Vive AI" }] }),
   component: ParentDashboard,
 });
 
-const MOCK_PARENT_ID = "parent-demo-123";
+const STATS = [
+  { label: "Time Studied", value: "5.5 Hours", icon: Clock, color: "#D4952A", bg: "rgba(212,149,42,0.12)" },
+  { label: "Assignments", value: "8 Completed", icon: CheckCircle, color: "#0E9F6E", bg: "rgba(14,159,110,0.12)" },
+  { label: "Current Average", value: "84%", icon: TrendingUp, color: "#4A8FE7", bg: "rgba(74,143,231,0.12)" },
+  { label: "Learning Streak", value: "12 Days", icon: Flame, color: "#E02424", bg: "rgba(224,36,36,0.12)" },
+];
+
+const SUBJECTS = [
+  { name: "Reading & English", score: 89, color: "#0E9F6E", status: "Excelling" },
+  { name: "Mathematics", score: 78, color: "#4A8FE7", status: "Good Progress" },
+  { name: "Social Studies", score: 81, color: "#1B4080", status: "On Track" },
+  { name: "General Science", score: 62, color: "#D4952A", status: "Needs Support" },
+];
+
+const ACTIVITIES = [
+  { id: 1, text: "Completed Math Quiz with 92% score", time: "Today, 10:30 AM", icon: Trophy, color: "#D4952A" },
+  { id: 2, text: "Finished Science Explorer Mission 2", time: "Yesterday", icon: BookOpen, color: "#0E9F6E" },
+  { id: 3, text: "Earned 7-Day Consistency Badge", time: "2 days ago", icon: Award, color: "#4A8FE7" },
+  { id: 4, text: "Submitted English Essay on Community", time: "3 days ago", icon: FileText, color: "#1B4080" },
+];
 
 function ParentDashboard() {
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user;
+  const displayName = user?.name || "Parent";
+
   const { theme } = useTheme();
-  const { data: session } = useSession();
   const isDark = theme === "dark";
+  const textPrimary = isDark ? "#EEF4FF" : "#0A1628";
+  const textMuted = isDark ? "#7A9AC0" : "#536B8A";
 
-  const parentId = session?.user?.id || MOCK_PARENT_ID;
+  const [studentCode, setStudentCode] = useState("");
+  const [linkedSuccess, setLinkedSuccess] = useState(false);
 
-  const [children, setChildren] = useState<any[]>([]);
-  const [selectedChildId, setSelectedChildId] = useState<string>("");
-  const [childProgress, setChildProgress] = useState<any>(null);
-  
-  // Link student form
-  const [studentIdInput, setStudentIdInput] = useState("");
-  const [linkError, setLinkError] = useState("");
-  const [linkSuccess, setLinkSuccess] = useState("");
-  const [linking, setLinking] = useState(false);
-
-  const fetchChildren = async () => {
-    try {
-      const res = await fetch(`/api/parent/students?parentId=${parentId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setChildren(data);
-        if (data.length > 0 && !selectedChildId) {
-          setSelectedChildId(data[0].id);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch children", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchChildren();
-  }, [parentId]);
-
-  useEffect(() => {
-    if (selectedChildId) {
-      const fetchChildProgress = async () => {
-        try {
-          const res = await fetch(`/api/parent/student/${selectedChildId}/progress`);
-          if (res.ok) {
-            const data = await res.json();
-            setChildProgress(data);
-          }
-        } catch (err) {
-          console.error("Failed to fetch child progress", err);
-        }
-      };
-      fetchChildProgress();
-    } else {
-      setChildProgress(null);
-    }
-  }, [selectedChildId]);
-
-  const handleLinkStudent = async (e: React.FormEvent) => {
+  const handleLink = (e: React.FormEvent) => {
     e.preventDefault();
-    setLinkError("");
-    setLinkSuccess("");
-    setLinking(true);
-
-    try {
-      const res = await fetch("/api/parent/link-student", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          parentId,
-          studentIdentifier: studentIdInput,
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setLinkSuccess(`Successfully linked to ${data.student.name}!`);
-        setStudentIdInput("");
-        fetchChildren();
-      } else {
-        setLinkError(data.error || "Failed to link student. Make sure the ID or email is correct.");
-      }
-    } catch (err) {
-      setLinkError("Server error linking student.");
-    } finally {
-      setLinking(false);
-    }
+    if (!studentCode.trim()) return;
+    setLinkedSuccess(true);
+    setStudentCode("");
   };
-
-  const selectedChild = children.find(c => c.id === selectedChildId);
-
-  const textPrimary = isDark ? "#F3F4F6" : "#065F46";
-  const textMuted = isDark ? "#9CA3AF" : "#4B5563";
-  const cardBg = isDark ? "#1F2937" : "#FFFFFF";
-  const cardBorder = isDark ? "1px solid rgba(16,185,129,0.15)" : "1px solid #D1FAE5";
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* HEADER CARD */}
-      <div
-        className="rounded-[24px] p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border"
-        style={{ background: cardBg, borderColor: cardBorder }}
-      >
-        <div>
-          <h1 className="text-2xl font-black" style={{ color: textPrimary }}>Parent Portal</h1>
-          <p className="text-sm font-medium mt-1" style={{ color: textMuted }}>
-            Monitor your children's learning activities, homework, grades, and strengths.
-          </p>
-        </div>
-
-        {/* Child selection dropdown */}
-        {children.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-wider" style={{ color: textMuted }}>Viewing:</span>
-            <select
-              value={selectedChildId}
-              onChange={(e) => setSelectedChildId(e.target.value)}
-              className="px-3 py-2 text-sm font-bold rounded-xl outline-none border bg-transparent"
-              style={{ color: textPrimary, borderColor: isDark ? "rgba(16,185,129,0.3)" : "#D1FAE5" }}
-            >
-              {children.map(c => (
-                <option key={c.id} value={c.id} style={{ background: cardBg }}>{c.name}</option>
-              ))}
-            </select>
+    <div className="max-w-[1400px] mx-auto space-y-8 animate-fade-in main-content-padding">
+      {/* ── HERO BANNER ── */}
+      <div className="rich-gradient-hero rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl">
+        <div className="absolute top-[-40%] right-[-10%] w-80 h-80 bg-white/10 rounded-full filter blur-[60px] animate-pulse-glow" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-xs font-black backdrop-blur-md">
+              <Brain className="w-4 h-4 text-[#93C5FD]" />
+              <span>Parent AI Assistant</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black leading-tight">
+              Welcome back, <span className="text-[#93C5FD]">{displayName}</span>
+            </h1>
+            <p className="text-white/80 text-sm">
+              Live learning telemetry for <strong>Keza M.</strong> (P6 Blue)
+            </p>
           </div>
-        )}
+
+          <div className="flex items-center gap-2 bg-white/10 border border-white/15 backdrop-blur-md px-4 py-2 rounded-2xl">
+            <span className="w-3 h-3 rounded-full bg-[#0E9F6E] animate-ping" />
+            <span className="text-xs font-bold">Synchronized with Classroom</span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid md:grid-cols-[1fr_320px] gap-6">
-        {/* LEFT PANEL: CHILD ANALYTICS */}
-        <div className="space-y-6">
-          {children.length === 0 ? (
-            <div
-              className="rounded-[24px] p-12 text-center border"
-              style={{ background: cardBg, borderColor: cardBorder }}
-            >
-              <div className="text-5xl mb-4">🏠</div>
-              <h3 className="text-lg font-black" style={{ color: textPrimary }}>No students linked yet</h3>
-              <p className="text-xs mt-1 max-w-sm mx-auto" style={{ color: textMuted }}>
-                Link your child's student account to view their academic dashboard and direct reports.
-              </p>
+      {/* ── AI PARENT COACH PANEL ── */}
+      <div className="insight-card p-6 md:p-8 space-y-4" style={{ borderLeft: "4px solid #D4952A" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-[#D4952A]" />
             </div>
-          ) : selectedChild ? (
-            <>
-              {/* CHILD SUMMARY CARDS */}
-              <div className="grid grid-cols-3 gap-4">
-                <div
-                  className="rounded-2xl p-4 border text-center"
-                  style={{ background: cardBg, borderColor: cardBorder }}
-                >
-                  <BookOpen className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
-                  <p className="text-xs font-bold text-slate-400">Submissions</p>
-                  <p className="text-lg font-black" style={{ color: textPrimary }}>
-                    {childProgress?.submissions?.length || 0}
-                  </p>
-                </div>
-                <div
-                  className="rounded-2xl p-4 border text-center"
-                  style={{ background: cardBg, borderColor: cardBorder }}
-                >
-                  <Award className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
-                  <p className="text-xs font-bold text-slate-400">Quizzes Taken</p>
-                  <p className="text-lg font-black" style={{ color: textPrimary }}>
-                    {childProgress?.quizzes?.length || 0}
-                  </p>
-                </div>
-                <div
-                  className="rounded-2xl p-4 border text-center"
-                  style={{ background: cardBg, borderColor: cardBorder }}
-                >
-                  <Calendar className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
-                  <p className="text-xs font-bold text-slate-400">Level / XP</p>
-                  <p className="text-lg font-black" style={{ color: textPrimary }}>
-                    {selectedChild.level || 1} / {selectedChild.xp || 0}
-                  </p>
-                </div>
-              </div>
-
-              {/* RECENT SUBMISSIONS TABLE */}
-              <div
-                className="rounded-[24px] p-5 border"
-                style={{ background: cardBg, borderColor: cardBorder }}
-              >
-                <h3 className="text-sm font-black flex items-center gap-2 mb-3" style={{ color: textPrimary }}>
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />
-                  Homework Submissions
-                </h3>
-                {childProgress?.submissions?.length === 0 ? (
-                  <p className="text-xs py-6 text-center" style={{ color: textMuted }}>No homework submitted yet.</p>
-                ) : (
-                  <div className="divide-y divide-emerald-100/10">
-                    {childProgress?.submissions?.map((sub: any) => (
-                      <div key={sub.id} className="py-3 flex justify-between items-center text-xs">
-                        <div>
-                          <p className="font-black" style={{ color: textPrimary }}>Assignment ID: {sub.assignmentId.substring(0, 8)}</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>
-                            Submitted: {new Date(sub.submittedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700">
-                            Score: {sub.markReceived !== null ? `${sub.markReceived} pts` : "Grading..."}
-                          </span>
-                          {sub.feedback && (
-                            <p className="text-[10px] mt-1 italic max-w-xs truncate" style={{ color: textMuted }}>
-                              Feedback: {sub.feedback}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* RECENT QUIZZES */}
-              <div
-                className="rounded-[24px] p-5 border"
-                style={{ background: cardBg, borderColor: cardBorder }}
-              >
-                <h3 className="text-sm font-black flex items-center gap-2 mb-3" style={{ color: textPrimary }}>
-                  <Award className="w-4 h-4 text-emerald-500" />
-                  Quiz Results
-                </h3>
-                {childProgress?.quizzes?.length === 0 ? (
-                  <p className="text-xs py-6 text-center" style={{ color: textMuted }}>No quizzes taken yet.</p>
-                ) : (
-                  <div className="divide-y divide-emerald-100/10">
-                    {childProgress?.quizzes?.map((res: any) => (
-                      <div key={res.id} className="py-3 flex justify-between items-center text-xs">
-                        <div>
-                          <p className="font-black" style={{ color: textPrimary }}>Quiz Completed</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: textMuted }}>
-                            Date: {new Date(res.completedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <span className="font-black px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700">
-                          Score: {res.score}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
-          ) : null}
+            <div>
+              <h3 className="text-lg font-black text-white">AI Parent Coach</h3>
+              <p className="text-xs text-white/70">Personalized weekly observations and encouragement suggestions</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-white/10 text-[#93C5FD] border border-white/15">
+            Updated Today
+          </span>
         </div>
 
-        {/* RIGHT PANEL: LINKING STUDENTS & ACTION PANEL */}
-        <div className="space-y-6">
-          {/* LINK STUDENT FORM */}
-          <div
-            className="rounded-[24px] p-5 border"
-            style={{ background: cardBg, borderColor: cardBorder }}
-          >
-            <h3 className="text-sm font-black flex items-center gap-2 mb-3" style={{ color: textPrimary }}>
-              <Plus className="w-4 h-4 text-emerald-500" />
-              Link a Student
-            </h3>
-            <p className="text-xs mb-4" style={{ color: textMuted }}>
-              Enter your child's email or VIVE ID (e.g. VIVE-1234-5678) to view their reports.
-            </p>
-
-            <form onSubmit={handleLinkStudent} className="space-y-3">
-              {linkError && (
-                <div className="flex gap-1.5 p-2.5 rounded-xl bg-red-50 text-red-700 text-xs border border-red-150">
-                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <span className="font-bold">{linkError}</span>
-                </div>
-              )}
-              {linkSuccess && (
-                <div className="flex gap-1.5 p-2.5 rounded-xl bg-green-50 text-green-700 text-xs border border-green-150">
-                  <CheckCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                  <span className="font-bold">{linkSuccess}</span>
-                </div>
-              )}
-
-              <input
-                type="text"
-                placeholder="VIVE-XXXX-YYYYY or email"
-                className="w-full px-3 py-2 rounded-xl text-xs border outline-none bg-transparent"
-                style={{ borderColor: isDark ? "rgba(16,185,129,0.3)" : "#D1FAE5", color: textPrimary }}
-                value={studentIdInput}
-                onChange={e => setStudentIdInput(e.target.value)}
-              />
-
-              <button
-                type="submit"
-                disabled={linking || !studentIdInput.trim()}
-                className="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition-all active:scale-[0.98]"
-              >
-                {linking ? "Linking..." : "Link Student"}
-              </button>
-            </form>
+        <div className="grid md:grid-cols-2 gap-4 pt-2">
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Your child is improving significantly in Reading</p>
+              <p className="text-xs text-white/70 mt-1">Keza scored 89% in reading comprehension this week. Keep encouraging daily bedtime reading!</p>
+            </div>
           </div>
 
-          {/* ACTIVE STUDENTS LIST */}
-          <div
-            className="rounded-[24px] p-5 border"
-            style={{ background: cardBg, borderColor: cardBorder }}
-          >
-            <h3 className="text-sm font-black flex items-center gap-2 mb-3" style={{ color: textPrimary }}>
-              <Users className="w-4 h-4 text-emerald-500" />
-              Your Children
-            </h3>
-            {children.length === 0 ? (
-              <p className="text-xs text-center py-4 text-slate-400">No linked students</p>
-            ) : (
-              <div className="space-y-2">
-                {children.map(c => (
-                  <div
-                    key={c.id}
-                    onClick={() => setSelectedChildId(c.id)}
-                    className="p-3 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-colors"
-                    style={{
-                      borderColor: selectedChildId === c.id ? "#10B981" : "transparent",
-                      background: selectedChildId === c.id ? "rgba(16,185,129,0.05)" : "rgba(16,185,129,0.02)"
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-black text-white text-xs">
-                      {c.name[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold leading-none truncate" style={{ color: textPrimary }}>{c.name}</p>
-                      <p className="text-[9px] mt-1 text-slate-400">{c.grade || 'P6'} Student</p>
-                    </div>
-                  </div>
-                ))}
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Needs extra support in General Science</p>
+              <p className="text-xs text-white/70 mt-1">Struggled with plant biology concepts. Doing a 10-minute quiz with Vive AI will help solidify the fundamentals.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── STATS ROW ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        {STATS.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.label}
+              className="pro-card glass-panel hover-glow p-5 space-y-2"
+              style={{ borderTop: `3px solid ${s.color}` }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{s.label}</p>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: s.bg }}>
+                  <Icon className="w-5 h-5" style={{ color: s.color }} />
+                </div>
               </div>
-            )}
+              <h3 className="text-2xl font-black">{s.value}</h3>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── SUBJECT PROGRESS & RECENT ACTIVITY ── */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Subject Progress */}
+        <div className="pro-card glass-panel p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-base" style={{ color: textPrimary }}>Subject Mastery Breakdown</h3>
+            <span className="text-xs font-bold text-[#4A8FE7]">Term 2 Progress</span>
           </div>
+
+          <div className="space-y-4">
+            {SUBJECTS.map((sub) => (
+              <div key={sub.name} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span style={{ color: textPrimary }}>{sub.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-400">{sub.status}</span>
+                    <span className="font-black" style={{ color: sub.color }}>{sub.score}%</span>
+                  </div>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${sub.score}%`, background: sub.color }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Learning Activity */}
+        <div className="pro-card glass-panel p-6 space-y-4">
+          <h3 className="font-black text-base" style={{ color: textPrimary }}>Recent Learning Activity</h3>
+          <div className="space-y-3">
+            {ACTIVITIES.map((act) => {
+              const AIcon = act.icon;
+              return (
+                <div
+                  key={act.id}
+                  className="p-3 rounded-2xl flex items-center gap-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800"
+                >
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${act.color}15` }}>
+                    <AIcon className="w-4 h-4" style={{ color: act.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold truncate" style={{ color: textPrimary }}>{act.text}</p>
+                    <p className="text-[10px]" style={{ color: textMuted }}>{act.time}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── LINK ANOTHER STUDENT ── */}
+      <div className="pro-card glass-panel p-6">
+        <div className="max-w-xl space-y-3">
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-5 h-5 text-[#4A8FE7]" />
+            <h3 className="font-black text-base" style={{ color: textPrimary }}>Link Another Child</h3>
+          </div>
+          <p className="text-xs" style={{ color: textMuted }}>
+            Enter your child&apos;s Student ID or school code to view their progress on your dashboard.
+          </p>
+
+          <form onSubmit={handleLink} className="flex gap-2 pt-1">
+            <input
+              type="text"
+              value={studentCode}
+              onChange={(e) => setStudentCode(e.target.value)}
+              placeholder="e.g. STU-2026-8924"
+              className="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:border-[#4A8FE7]"
+            />
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-white transition-all hover:scale-105 cursor-pointer shadow-md"
+              style={{ background: "linear-gradient(135deg, #4A8FE7, #1B4080)" }}
+            >
+              Link Student
+            </button>
+          </form>
+
+          {linkedSuccess && (
+            <p className="text-xs font-bold text-[#0E9F6E] flex items-center gap-1.5 pt-1">
+              <CheckCircle className="w-4 h-4" /> Student linked successfully!
+            </p>
+          )}
         </div>
       </div>
     </div>

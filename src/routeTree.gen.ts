@@ -39,11 +39,14 @@ import { Route as StudentReadRouteImport } from './routes/student.read'
 import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
 import { Route as StudentProgressRouteImport } from './routes/student.progress'
 import { Route as StudentPlannerRouteImport } from './routes/student.planner'
+import { Route as StudentMissionsRouteImport } from './routes/student.missions'
 import { Route as StudentMessagesRouteImport } from './routes/student.messages'
 import { Route as StudentLibraryRouteImport } from './routes/student.library'
+import { Route as StudentLearningTwinRouteImport } from './routes/student.learning-twin'
 import { Route as StudentHomeworkRouteImport } from './routes/student.homework'
 import { Route as StudentGamesRouteImport } from './routes/student.games'
 import { Route as StudentCommunityRouteImport } from './routes/student.community'
+import { Route as StudentClassesRouteImport } from './routes/student.classes'
 import { Route as StudentCareerRouteImport } from './routes/student.career'
 import { Route as StudentAiQuizzesRouteImport } from './routes/student.ai-quizzes'
 import { Route as ParentMessagesRouteImport } from './routes/parent.messages'
@@ -202,6 +205,11 @@ const StudentPlannerRoute = StudentPlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentMissionsRoute = StudentMissionsRouteImport.update({
+  id: '/missions',
+  path: '/missions',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentMessagesRoute = StudentMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
@@ -210,6 +218,11 @@ const StudentMessagesRoute = StudentMessagesRouteImport.update({
 const StudentLibraryRoute = StudentLibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentLearningTwinRoute = StudentLearningTwinRouteImport.update({
+  id: '/learning-twin',
+  path: '/learning-twin',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentHomeworkRoute = StudentHomeworkRouteImport.update({
@@ -225,6 +238,11 @@ const StudentGamesRoute = StudentGamesRouteImport.update({
 const StudentCommunityRoute = StudentCommunityRouteImport.update({
   id: '/community',
   path: '/community',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentClassesRoute = StudentClassesRouteImport.update({
+  id: '/classes',
+  path: '/classes',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentCareerRoute = StudentCareerRouteImport.update({
@@ -269,11 +287,14 @@ export interface FileRoutesByFullPath {
   '/parent/messages': typeof ParentMessagesRoute
   '/student/ai-quizzes': typeof StudentAiQuizzesRoute
   '/student/career': typeof StudentCareerRoute
+  '/student/classes': typeof StudentClassesRoute
   '/student/community': typeof StudentCommunityRoute
   '/student/games': typeof StudentGamesRoute
   '/student/homework': typeof StudentHomeworkRouteWithChildren
+  '/student/learning-twin': typeof StudentLearningTwinRoute
   '/student/library': typeof StudentLibraryRoute
   '/student/messages': typeof StudentMessagesRoute
+  '/student/missions': typeof StudentMissionsRoute
   '/student/planner': typeof StudentPlannerRoute
   '/student/progress': typeof StudentProgressRoute
   '/student/quizzes': typeof StudentQuizzesRoute
@@ -308,11 +329,14 @@ export interface FileRoutesByTo {
   '/parent/messages': typeof ParentMessagesRoute
   '/student/ai-quizzes': typeof StudentAiQuizzesRoute
   '/student/career': typeof StudentCareerRoute
+  '/student/classes': typeof StudentClassesRoute
   '/student/community': typeof StudentCommunityRoute
   '/student/games': typeof StudentGamesRoute
   '/student/homework': typeof StudentHomeworkRouteWithChildren
+  '/student/learning-twin': typeof StudentLearningTwinRoute
   '/student/library': typeof StudentLibraryRoute
   '/student/messages': typeof StudentMessagesRoute
+  '/student/missions': typeof StudentMissionsRoute
   '/student/planner': typeof StudentPlannerRoute
   '/student/progress': typeof StudentProgressRoute
   '/student/quizzes': typeof StudentQuizzesRoute
@@ -351,11 +375,14 @@ export interface FileRoutesById {
   '/parent/messages': typeof ParentMessagesRoute
   '/student/ai-quizzes': typeof StudentAiQuizzesRoute
   '/student/career': typeof StudentCareerRoute
+  '/student/classes': typeof StudentClassesRoute
   '/student/community': typeof StudentCommunityRoute
   '/student/games': typeof StudentGamesRoute
   '/student/homework': typeof StudentHomeworkRouteWithChildren
+  '/student/learning-twin': typeof StudentLearningTwinRoute
   '/student/library': typeof StudentLibraryRoute
   '/student/messages': typeof StudentMessagesRoute
+  '/student/missions': typeof StudentMissionsRoute
   '/student/planner': typeof StudentPlannerRoute
   '/student/progress': typeof StudentProgressRoute
   '/student/quizzes': typeof StudentQuizzesRoute
@@ -395,11 +422,14 @@ export interface FileRouteTypes {
     | '/parent/messages'
     | '/student/ai-quizzes'
     | '/student/career'
+    | '/student/classes'
     | '/student/community'
     | '/student/games'
     | '/student/homework'
+    | '/student/learning-twin'
     | '/student/library'
     | '/student/messages'
+    | '/student/missions'
     | '/student/planner'
     | '/student/progress'
     | '/student/quizzes'
@@ -434,11 +464,14 @@ export interface FileRouteTypes {
     | '/parent/messages'
     | '/student/ai-quizzes'
     | '/student/career'
+    | '/student/classes'
     | '/student/community'
     | '/student/games'
     | '/student/homework'
+    | '/student/learning-twin'
     | '/student/library'
     | '/student/messages'
+    | '/student/missions'
     | '/student/planner'
     | '/student/progress'
     | '/student/quizzes'
@@ -476,11 +509,14 @@ export interface FileRouteTypes {
     | '/parent/messages'
     | '/student/ai-quizzes'
     | '/student/career'
+    | '/student/classes'
     | '/student/community'
     | '/student/games'
     | '/student/homework'
+    | '/student/learning-twin'
     | '/student/library'
     | '/student/messages'
+    | '/student/missions'
     | '/student/planner'
     | '/student/progress'
     | '/student/quizzes'
@@ -729,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentPlannerRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/missions': {
+      id: '/student/missions'
+      path: '/missions'
+      fullPath: '/student/missions'
+      preLoaderRoute: typeof StudentMissionsRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/student/messages': {
       id: '/student/messages'
       path: '/messages'
@@ -741,6 +784,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/student/library'
       preLoaderRoute: typeof StudentLibraryRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/learning-twin': {
+      id: '/student/learning-twin'
+      path: '/learning-twin'
+      fullPath: '/student/learning-twin'
+      preLoaderRoute: typeof StudentLearningTwinRouteImport
       parentRoute: typeof StudentRoute
     }
     '/student/homework': {
@@ -762,6 +812,13 @@ declare module '@tanstack/react-router' {
       path: '/community'
       fullPath: '/student/community'
       preLoaderRoute: typeof StudentCommunityRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/classes': {
+      id: '/student/classes'
+      path: '/classes'
+      fullPath: '/student/classes'
+      preLoaderRoute: typeof StudentClassesRouteImport
       parentRoute: typeof StudentRoute
     }
     '/student/career': {
@@ -832,11 +889,14 @@ const StudentHomeworkRouteWithChildren = StudentHomeworkRoute._addFileChildren(
 interface StudentRouteChildren {
   StudentAiQuizzesRoute: typeof StudentAiQuizzesRoute
   StudentCareerRoute: typeof StudentCareerRoute
+  StudentClassesRoute: typeof StudentClassesRoute
   StudentCommunityRoute: typeof StudentCommunityRoute
   StudentGamesRoute: typeof StudentGamesRoute
   StudentHomeworkRoute: typeof StudentHomeworkRouteWithChildren
+  StudentLearningTwinRoute: typeof StudentLearningTwinRoute
   StudentLibraryRoute: typeof StudentLibraryRoute
   StudentMessagesRoute: typeof StudentMessagesRoute
+  StudentMissionsRoute: typeof StudentMissionsRoute
   StudentPlannerRoute: typeof StudentPlannerRoute
   StudentProgressRoute: typeof StudentProgressRoute
   StudentQuizzesRoute: typeof StudentQuizzesRoute
@@ -851,11 +911,14 @@ interface StudentRouteChildren {
 const StudentRouteChildren: StudentRouteChildren = {
   StudentAiQuizzesRoute: StudentAiQuizzesRoute,
   StudentCareerRoute: StudentCareerRoute,
+  StudentClassesRoute: StudentClassesRoute,
   StudentCommunityRoute: StudentCommunityRoute,
   StudentGamesRoute: StudentGamesRoute,
   StudentHomeworkRoute: StudentHomeworkRouteWithChildren,
+  StudentLearningTwinRoute: StudentLearningTwinRoute,
   StudentLibraryRoute: StudentLibraryRoute,
   StudentMessagesRoute: StudentMessagesRoute,
+  StudentMissionsRoute: StudentMissionsRoute,
   StudentPlannerRoute: StudentPlannerRoute,
   StudentProgressRoute: StudentProgressRoute,
   StudentQuizzesRoute: StudentQuizzesRoute,
