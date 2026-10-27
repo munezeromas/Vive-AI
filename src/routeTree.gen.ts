@@ -9,88 +9,53 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TeacherRouteImport } from './routes/teacher'
-import { Route as SwRouteImport } from './routes/sw'
-import { Route as StudentRouteImport } from './routes/student'
-import { Route as RwRouteImport } from './routes/rw'
-import { Route as ParentRouteImport } from './routes/parent'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as IslandRouteImport } from './routes/island'
-import { Route as FrRouteImport } from './routes/fr'
-import { Route as EnRouteImport } from './routes/en'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
-import { Route as StudentIndexRouteImport } from './routes/student.index'
+import { Route as EnRouteImport } from './routes/en'
+import { Route as FrRouteImport } from './routes/fr'
+import { Route as IslandRouteImport } from './routes/island'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ParentRouteImport } from './routes/parent'
+import { Route as RwRouteImport } from './routes/rw'
+import { Route as StudentRouteImport } from './routes/student'
+import { Route as SwRouteImport } from './routes/sw'
+import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as ParentIndexRouteImport } from './routes/parent.index'
-import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
-import { Route as TeacherStaffRouteImport } from './routes/teacher.staff'
-import { Route as TeacherReportsRouteImport } from './routes/teacher.reports'
-import { Route as TeacherMessagesRouteImport } from './routes/teacher.messages'
-import { Route as TeacherMaterialsRouteImport } from './routes/teacher.materials'
-import { Route as TeacherClassesManagementRouteImport } from './routes/teacher.classes-management'
-import { Route as TeacherAssignmentsManagementRouteImport } from './routes/teacher.assignments-management'
-import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
-import { Route as TeacherAlertsRouteImport } from './routes/teacher.alerts'
-import { Route as StudentVideosRouteImport } from './routes/student.videos'
-import { Route as StudentTutorRouteImport } from './routes/student.tutor'
-import { Route as StudentSpeakRouteImport } from './routes/student.speak'
-import { Route as StudentSimplifyRouteImport } from './routes/student.simplify'
-import { Route as StudentReadRouteImport } from './routes/student.read'
-import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
-import { Route as StudentProgressRouteImport } from './routes/student.progress'
-import { Route as StudentPlannerRouteImport } from './routes/student.planner'
-import { Route as StudentMissionsRouteImport } from './routes/student.missions'
-import { Route as StudentMessagesRouteImport } from './routes/student.messages'
-import { Route as StudentLibraryRouteImport } from './routes/student.library'
-import { Route as StudentLearningTwinRouteImport } from './routes/student.learning-twin'
-import { Route as StudentHomeworkRouteImport } from './routes/student.homework'
-import { Route as StudentGamesRouteImport } from './routes/student.games'
-import { Route as StudentCommunityRouteImport } from './routes/student.community'
-import { Route as StudentClassesRouteImport } from './routes/student.classes'
-import { Route as StudentCareerRouteImport } from './routes/student.career'
-import { Route as StudentAiQuizzesRouteImport } from './routes/student.ai-quizzes'
-import { Route as ParentMessagesRouteImport } from './routes/parent.messages'
 import { Route as ParentAttendanceRouteImport } from './routes/parent.attendance'
+import { Route as ParentMessagesRouteImport } from './routes/parent.messages'
+import { Route as StudentIndexRouteImport } from './routes/student.index'
+import { Route as StudentAiQuizzesRouteImport } from './routes/student.ai-quizzes'
+import { Route as StudentCareerRouteImport } from './routes/student.career'
+import { Route as StudentClassesRouteImport } from './routes/student.classes'
+import { Route as StudentCommunityRouteImport } from './routes/student.community'
+import { Route as StudentGamesRouteImport } from './routes/student.games'
+import { Route as StudentHomeworkRouteImport } from './routes/student.homework'
+import { Route as StudentLearningTwinRouteImport } from './routes/student.learning-twin'
+import { Route as StudentLibraryRouteImport } from './routes/student.library'
+import { Route as StudentMessagesRouteImport } from './routes/student.messages'
+import { Route as StudentMissionsRouteImport } from './routes/student.missions'
+import { Route as StudentPlannerRouteImport } from './routes/student.planner'
+import { Route as StudentProgressRouteImport } from './routes/student.progress'
+import { Route as StudentQuizzesRouteImport } from './routes/student.quizzes'
+import { Route as StudentReadRouteImport } from './routes/student.read'
+import { Route as StudentSimplifyRouteImport } from './routes/student.simplify'
+import { Route as StudentSpeakRouteImport } from './routes/student.speak'
+import { Route as StudentTutorRouteImport } from './routes/student.tutor'
+import { Route as StudentVideosRouteImport } from './routes/student.videos'
+import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
+import { Route as TeacherAlertsRouteImport } from './routes/teacher.alerts'
+import { Route as TeacherAssignmentsRouteImport } from './routes/teacher.assignments'
+import { Route as TeacherAssignmentsManagementRouteImport } from './routes/teacher.assignments-management'
+import { Route as TeacherClassesManagementRouteImport } from './routes/teacher.classes-management'
+import { Route as TeacherMaterialsRouteImport } from './routes/teacher.materials'
+import { Route as TeacherMessagesRouteImport } from './routes/teacher.messages'
+import { Route as TeacherReportsRouteImport } from './routes/teacher.reports'
+import { Route as TeacherStaffRouteImport } from './routes/teacher.staff'
+import { Route as TeacherStudentsRouteImport } from './routes/teacher.students'
 import { Route as StudentHomeworkAssignmentIdRouteImport } from './routes/student.homework.$assignmentId'
 
-const TeacherRoute = TeacherRouteImport.update({
-  id: '/teacher',
-  path: '/teacher',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SwRoute = SwRouteImport.update({
-  id: '/sw',
-  path: '/sw',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const StudentRoute = StudentRouteImport.update({
-  id: '/student',
-  path: '/student',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RwRoute = RwRouteImport.update({
-  id: '/rw',
-  path: '/rw',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParentRoute = ParentRouteImport.update({
-  id: '/parent',
-  path: '/parent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IslandRoute = IslandRouteImport.update({
-  id: '/island',
-  path: '/island',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FrRoute = FrRouteImport.update({
-  id: '/fr',
-  path: '/fr',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EnRoute = EnRouteImport.update({
@@ -98,156 +63,64 @@ const EnRoute = EnRouteImport.update({
   path: '/en',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const FrRoute = FrRouteImport.update({
+  id: '/fr',
+  path: '/fr',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TeacherIndexRoute = TeacherIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TeacherRoute,
+const IslandRoute = IslandRouteImport.update({
+  id: '/island',
+  path: '/island',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const StudentIndexRoute = StudentIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => StudentRoute,
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParentRoute = ParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RwRoute = RwRouteImport.update({
+  id: '/rw',
+  path: '/rw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SwRoute = SwRouteImport.update({
+  id: '/sw',
+  path: '/sw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherRoute = TeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ParentIndexRoute = ParentIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ParentRoute,
 } as any)
-const TeacherStudentsRoute = TeacherStudentsRouteImport.update({
-  id: '/students',
-  path: '/students',
-  getParentRoute: () => TeacherRoute,
+const ParentAttendanceRoute = ParentAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => ParentRoute,
 } as any)
-const TeacherStaffRoute = TeacherStaffRouteImport.update({
-  id: '/staff',
-  path: '/staff',
-  getParentRoute: () => TeacherRoute,
-} as any)
-const TeacherReportsRoute = TeacherReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => TeacherRoute,
-} as any)
-const TeacherMessagesRoute = TeacherMessagesRouteImport.update({
+const ParentMessagesRoute = ParentMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
-  getParentRoute: () => TeacherRoute,
+  getParentRoute: () => ParentRoute,
 } as any)
-const TeacherMaterialsRoute = TeacherMaterialsRouteImport.update({
-  id: '/materials',
-  path: '/materials',
-  getParentRoute: () => TeacherRoute,
-} as any)
-const TeacherClassesManagementRoute =
-  TeacherClassesManagementRouteImport.update({
-    id: '/classes-management',
-    path: '/classes-management',
-    getParentRoute: () => TeacherRoute,
-  } as any)
-const TeacherAssignmentsManagementRoute =
-  TeacherAssignmentsManagementRouteImport.update({
-    id: '/assignments-management',
-    path: '/assignments-management',
-    getParentRoute: () => TeacherRoute,
-  } as any)
-const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
-  id: '/assignments',
-  path: '/assignments',
-  getParentRoute: () => TeacherRoute,
-} as any)
-const TeacherAlertsRoute = TeacherAlertsRouteImport.update({
-  id: '/alerts',
-  path: '/alerts',
-  getParentRoute: () => TeacherRoute,
-} as any)
-const StudentVideosRoute = StudentVideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentTutorRoute = StudentTutorRouteImport.update({
-  id: '/tutor',
-  path: '/tutor',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentSpeakRoute = StudentSpeakRouteImport.update({
-  id: '/speak',
-  path: '/speak',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentSimplifyRoute = StudentSimplifyRouteImport.update({
-  id: '/simplify',
-  path: '/simplify',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentReadRoute = StudentReadRouteImport.update({
-  id: '/read',
-  path: '/read',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
-  id: '/quizzes',
-  path: '/quizzes',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentProgressRoute = StudentProgressRouteImport.update({
-  id: '/progress',
-  path: '/progress',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentPlannerRoute = StudentPlannerRouteImport.update({
-  id: '/planner',
-  path: '/planner',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentMissionsRoute = StudentMissionsRouteImport.update({
-  id: '/missions',
-  path: '/missions',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentMessagesRoute = StudentMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentLibraryRoute = StudentLibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentLearningTwinRoute = StudentLearningTwinRouteImport.update({
-  id: '/learning-twin',
-  path: '/learning-twin',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentHomeworkRoute = StudentHomeworkRouteImport.update({
-  id: '/homework',
-  path: '/homework',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentGamesRoute = StudentGamesRouteImport.update({
-  id: '/games',
-  path: '/games',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentCommunityRoute = StudentCommunityRouteImport.update({
-  id: '/community',
-  path: '/community',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentClassesRoute = StudentClassesRouteImport.update({
-  id: '/classes',
-  path: '/classes',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentCareerRoute = StudentCareerRouteImport.update({
-  id: '/career',
-  path: '/career',
+const StudentIndexRoute = StudentIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentAiQuizzesRoute = StudentAiQuizzesRouteImport.update({
@@ -255,15 +128,142 @@ const StudentAiQuizzesRoute = StudentAiQuizzesRouteImport.update({
   path: '/ai-quizzes',
   getParentRoute: () => StudentRoute,
 } as any)
-const ParentMessagesRoute = ParentMessagesRouteImport.update({
+const StudentCareerRoute = StudentCareerRouteImport.update({
+  id: '/career',
+  path: '/career',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentClassesRoute = StudentClassesRouteImport.update({
+  id: '/classes',
+  path: '/classes',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentCommunityRoute = StudentCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentGamesRoute = StudentGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentHomeworkRoute = StudentHomeworkRouteImport.update({
+  id: '/homework',
+  path: '/homework',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentLearningTwinRoute = StudentLearningTwinRouteImport.update({
+  id: '/learning-twin',
+  path: '/learning-twin',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentLibraryRoute = StudentLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentMessagesRoute = StudentMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
-  getParentRoute: () => ParentRoute,
+  getParentRoute: () => StudentRoute,
 } as any)
-const ParentAttendanceRoute = ParentAttendanceRouteImport.update({
-  id: '/attendance',
-  path: '/attendance',
-  getParentRoute: () => ParentRoute,
+const StudentMissionsRoute = StudentMissionsRouteImport.update({
+  id: '/missions',
+  path: '/missions',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentPlannerRoute = StudentPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentProgressRoute = StudentProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentQuizzesRoute = StudentQuizzesRouteImport.update({
+  id: '/quizzes',
+  path: '/quizzes',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentReadRoute = StudentReadRouteImport.update({
+  id: '/read',
+  path: '/read',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentSimplifyRoute = StudentSimplifyRouteImport.update({
+  id: '/simplify',
+  path: '/simplify',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentSpeakRoute = StudentSpeakRouteImport.update({
+  id: '/speak',
+  path: '/speak',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentTutorRoute = StudentTutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentVideosRoute = StudentVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => StudentRoute,
+} as any)
+const TeacherIndexRoute = TeacherIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherAlertsRoute = TeacherAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherAssignmentsRoute = TeacherAssignmentsRouteImport.update({
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherAssignmentsManagementRoute =
+  TeacherAssignmentsManagementRouteImport.update({
+    id: '/assignments-management',
+    path: '/assignments-management',
+    getParentRoute: () => TeacherRoute,
+  } as any)
+const TeacherClassesManagementRoute =
+  TeacherClassesManagementRouteImport.update({
+    id: '/classes-management',
+    path: '/classes-management',
+    getParentRoute: () => TeacherRoute,
+  } as any)
+const TeacherMaterialsRoute = TeacherMaterialsRouteImport.update({
+  id: '/materials',
+  path: '/materials',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherMessagesRoute = TeacherMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherReportsRoute = TeacherReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherStaffRoute = TeacherStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => TeacherRoute,
+} as any)
+const TeacherStudentsRoute = TeacherStudentsRouteImport.update({
+  id: '/students',
+  path: '/students',
+  getParentRoute: () => TeacherRoute,
 } as any)
 const StudentHomeworkAssignmentIdRoute =
   StudentHomeworkAssignmentIdRouteImport.update({
@@ -555,60 +555,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/teacher': {
-      id: '/teacher'
-      path: '/teacher'
-      fullPath: '/teacher'
-      preLoaderRoute: typeof TeacherRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sw': {
-      id: '/sw'
-      path: '/sw'
-      fullPath: '/sw'
-      preLoaderRoute: typeof SwRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/student': {
-      id: '/student'
-      path: '/student'
-      fullPath: '/student'
-      preLoaderRoute: typeof StudentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/rw': {
-      id: '/rw'
-      path: '/rw'
-      fullPath: '/rw'
-      preLoaderRoute: typeof RwRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parent': {
-      id: '/parent'
-      path: '/parent'
-      fullPath: '/parent'
-      preLoaderRoute: typeof ParentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/island': {
-      id: '/island'
-      path: '/island'
-      fullPath: '/island'
-      preLoaderRoute: typeof IslandRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fr': {
-      id: '/fr'
-      path: '/fr'
-      fullPath: '/fr'
-      preLoaderRoute: typeof FrRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/en': {
@@ -618,26 +569,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EnRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/fr': {
+      id: '/fr'
+      path: '/fr'
+      fullPath: '/fr'
+      preLoaderRoute: typeof FrRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/teacher/': {
-      id: '/teacher/'
-      path: '/'
-      fullPath: '/teacher/'
-      preLoaderRoute: typeof TeacherIndexRouteImport
-      parentRoute: typeof TeacherRoute
+    '/island': {
+      id: '/island'
+      path: '/island'
+      fullPath: '/island'
+      preLoaderRoute: typeof IslandRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/student/': {
-      id: '/student/'
-      path: '/'
-      fullPath: '/student/'
-      preLoaderRoute: typeof StudentIndexRouteImport
-      parentRoute: typeof StudentRoute
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parent': {
+      id: '/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rw': {
+      id: '/rw'
+      path: '/rw'
+      fullPath: '/rw'
+      preLoaderRoute: typeof RwRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sw': {
+      id: '/sw'
+      path: '/sw'
+      fullPath: '/sw'
+      preLoaderRoute: typeof SwRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher': {
+      id: '/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof TeacherRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/parent/': {
       id: '/parent/'
@@ -646,186 +632,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentIndexRouteImport
       parentRoute: typeof ParentRoute
     }
-    '/teacher/students': {
-      id: '/teacher/students'
-      path: '/students'
-      fullPath: '/teacher/students'
-      preLoaderRoute: typeof TeacherStudentsRouteImport
-      parentRoute: typeof TeacherRoute
+    '/parent/attendance': {
+      id: '/parent/attendance'
+      path: '/attendance'
+      fullPath: '/parent/attendance'
+      preLoaderRoute: typeof ParentAttendanceRouteImport
+      parentRoute: typeof ParentRoute
     }
-    '/teacher/staff': {
-      id: '/teacher/staff'
-      path: '/staff'
-      fullPath: '/teacher/staff'
-      preLoaderRoute: typeof TeacherStaffRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/reports': {
-      id: '/teacher/reports'
-      path: '/reports'
-      fullPath: '/teacher/reports'
-      preLoaderRoute: typeof TeacherReportsRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/messages': {
-      id: '/teacher/messages'
+    '/parent/messages': {
+      id: '/parent/messages'
       path: '/messages'
-      fullPath: '/teacher/messages'
-      preLoaderRoute: typeof TeacherMessagesRouteImport
-      parentRoute: typeof TeacherRoute
+      fullPath: '/parent/messages'
+      preLoaderRoute: typeof ParentMessagesRouteImport
+      parentRoute: typeof ParentRoute
     }
-    '/teacher/materials': {
-      id: '/teacher/materials'
-      path: '/materials'
-      fullPath: '/teacher/materials'
-      preLoaderRoute: typeof TeacherMaterialsRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/classes-management': {
-      id: '/teacher/classes-management'
-      path: '/classes-management'
-      fullPath: '/teacher/classes-management'
-      preLoaderRoute: typeof TeacherClassesManagementRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/assignments-management': {
-      id: '/teacher/assignments-management'
-      path: '/assignments-management'
-      fullPath: '/teacher/assignments-management'
-      preLoaderRoute: typeof TeacherAssignmentsManagementRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/assignments': {
-      id: '/teacher/assignments'
-      path: '/assignments'
-      fullPath: '/teacher/assignments'
-      preLoaderRoute: typeof TeacherAssignmentsRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/teacher/alerts': {
-      id: '/teacher/alerts'
-      path: '/alerts'
-      fullPath: '/teacher/alerts'
-      preLoaderRoute: typeof TeacherAlertsRouteImport
-      parentRoute: typeof TeacherRoute
-    }
-    '/student/videos': {
-      id: '/student/videos'
-      path: '/videos'
-      fullPath: '/student/videos'
-      preLoaderRoute: typeof StudentVideosRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/tutor': {
-      id: '/student/tutor'
-      path: '/tutor'
-      fullPath: '/student/tutor'
-      preLoaderRoute: typeof StudentTutorRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/speak': {
-      id: '/student/speak'
-      path: '/speak'
-      fullPath: '/student/speak'
-      preLoaderRoute: typeof StudentSpeakRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/simplify': {
-      id: '/student/simplify'
-      path: '/simplify'
-      fullPath: '/student/simplify'
-      preLoaderRoute: typeof StudentSimplifyRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/read': {
-      id: '/student/read'
-      path: '/read'
-      fullPath: '/student/read'
-      preLoaderRoute: typeof StudentReadRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/quizzes': {
-      id: '/student/quizzes'
-      path: '/quizzes'
-      fullPath: '/student/quizzes'
-      preLoaderRoute: typeof StudentQuizzesRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/progress': {
-      id: '/student/progress'
-      path: '/progress'
-      fullPath: '/student/progress'
-      preLoaderRoute: typeof StudentProgressRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/planner': {
-      id: '/student/planner'
-      path: '/planner'
-      fullPath: '/student/planner'
-      preLoaderRoute: typeof StudentPlannerRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/missions': {
-      id: '/student/missions'
-      path: '/missions'
-      fullPath: '/student/missions'
-      preLoaderRoute: typeof StudentMissionsRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/messages': {
-      id: '/student/messages'
-      path: '/messages'
-      fullPath: '/student/messages'
-      preLoaderRoute: typeof StudentMessagesRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/library': {
-      id: '/student/library'
-      path: '/library'
-      fullPath: '/student/library'
-      preLoaderRoute: typeof StudentLibraryRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/learning-twin': {
-      id: '/student/learning-twin'
-      path: '/learning-twin'
-      fullPath: '/student/learning-twin'
-      preLoaderRoute: typeof StudentLearningTwinRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/homework': {
-      id: '/student/homework'
-      path: '/homework'
-      fullPath: '/student/homework'
-      preLoaderRoute: typeof StudentHomeworkRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/games': {
-      id: '/student/games'
-      path: '/games'
-      fullPath: '/student/games'
-      preLoaderRoute: typeof StudentGamesRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/community': {
-      id: '/student/community'
-      path: '/community'
-      fullPath: '/student/community'
-      preLoaderRoute: typeof StudentCommunityRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/classes': {
-      id: '/student/classes'
-      path: '/classes'
-      fullPath: '/student/classes'
-      preLoaderRoute: typeof StudentClassesRouteImport
-      parentRoute: typeof StudentRoute
-    }
-    '/student/career': {
-      id: '/student/career'
-      path: '/career'
-      fullPath: '/student/career'
-      preLoaderRoute: typeof StudentCareerRouteImport
+    '/student/': {
+      id: '/student/'
+      path: '/'
+      fullPath: '/student/'
+      preLoaderRoute: typeof StudentIndexRouteImport
       parentRoute: typeof StudentRoute
     }
     '/student/ai-quizzes': {
@@ -835,19 +660,194 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentAiQuizzesRouteImport
       parentRoute: typeof StudentRoute
     }
-    '/parent/messages': {
-      id: '/parent/messages'
-      path: '/messages'
-      fullPath: '/parent/messages'
-      preLoaderRoute: typeof ParentMessagesRouteImport
-      parentRoute: typeof ParentRoute
+    '/student/career': {
+      id: '/student/career'
+      path: '/career'
+      fullPath: '/student/career'
+      preLoaderRoute: typeof StudentCareerRouteImport
+      parentRoute: typeof StudentRoute
     }
-    '/parent/attendance': {
-      id: '/parent/attendance'
-      path: '/attendance'
-      fullPath: '/parent/attendance'
-      preLoaderRoute: typeof ParentAttendanceRouteImport
-      parentRoute: typeof ParentRoute
+    '/student/classes': {
+      id: '/student/classes'
+      path: '/classes'
+      fullPath: '/student/classes'
+      preLoaderRoute: typeof StudentClassesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/community': {
+      id: '/student/community'
+      path: '/community'
+      fullPath: '/student/community'
+      preLoaderRoute: typeof StudentCommunityRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/games': {
+      id: '/student/games'
+      path: '/games'
+      fullPath: '/student/games'
+      preLoaderRoute: typeof StudentGamesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/homework': {
+      id: '/student/homework'
+      path: '/homework'
+      fullPath: '/student/homework'
+      preLoaderRoute: typeof StudentHomeworkRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/learning-twin': {
+      id: '/student/learning-twin'
+      path: '/learning-twin'
+      fullPath: '/student/learning-twin'
+      preLoaderRoute: typeof StudentLearningTwinRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/library': {
+      id: '/student/library'
+      path: '/library'
+      fullPath: '/student/library'
+      preLoaderRoute: typeof StudentLibraryRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/messages': {
+      id: '/student/messages'
+      path: '/messages'
+      fullPath: '/student/messages'
+      preLoaderRoute: typeof StudentMessagesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/missions': {
+      id: '/student/missions'
+      path: '/missions'
+      fullPath: '/student/missions'
+      preLoaderRoute: typeof StudentMissionsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/planner': {
+      id: '/student/planner'
+      path: '/planner'
+      fullPath: '/student/planner'
+      preLoaderRoute: typeof StudentPlannerRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/progress': {
+      id: '/student/progress'
+      path: '/progress'
+      fullPath: '/student/progress'
+      preLoaderRoute: typeof StudentProgressRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/quizzes': {
+      id: '/student/quizzes'
+      path: '/quizzes'
+      fullPath: '/student/quizzes'
+      preLoaderRoute: typeof StudentQuizzesRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/read': {
+      id: '/student/read'
+      path: '/read'
+      fullPath: '/student/read'
+      preLoaderRoute: typeof StudentReadRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/simplify': {
+      id: '/student/simplify'
+      path: '/simplify'
+      fullPath: '/student/simplify'
+      preLoaderRoute: typeof StudentSimplifyRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/speak': {
+      id: '/student/speak'
+      path: '/speak'
+      fullPath: '/student/speak'
+      preLoaderRoute: typeof StudentSpeakRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/tutor': {
+      id: '/student/tutor'
+      path: '/tutor'
+      fullPath: '/student/tutor'
+      preLoaderRoute: typeof StudentTutorRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/videos': {
+      id: '/student/videos'
+      path: '/videos'
+      fullPath: '/student/videos'
+      preLoaderRoute: typeof StudentVideosRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/teacher/': {
+      id: '/teacher/'
+      path: '/'
+      fullPath: '/teacher/'
+      preLoaderRoute: typeof TeacherIndexRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/alerts': {
+      id: '/teacher/alerts'
+      path: '/alerts'
+      fullPath: '/teacher/alerts'
+      preLoaderRoute: typeof TeacherAlertsRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/assignments': {
+      id: '/teacher/assignments'
+      path: '/assignments'
+      fullPath: '/teacher/assignments'
+      preLoaderRoute: typeof TeacherAssignmentsRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/assignments-management': {
+      id: '/teacher/assignments-management'
+      path: '/assignments-management'
+      fullPath: '/teacher/assignments-management'
+      preLoaderRoute: typeof TeacherAssignmentsManagementRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/classes-management': {
+      id: '/teacher/classes-management'
+      path: '/classes-management'
+      fullPath: '/teacher/classes-management'
+      preLoaderRoute: typeof TeacherClassesManagementRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/materials': {
+      id: '/teacher/materials'
+      path: '/materials'
+      fullPath: '/teacher/materials'
+      preLoaderRoute: typeof TeacherMaterialsRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/messages': {
+      id: '/teacher/messages'
+      path: '/messages'
+      fullPath: '/teacher/messages'
+      preLoaderRoute: typeof TeacherMessagesRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/reports': {
+      id: '/teacher/reports'
+      path: '/reports'
+      fullPath: '/teacher/reports'
+      preLoaderRoute: typeof TeacherReportsRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/staff': {
+      id: '/teacher/staff'
+      path: '/staff'
+      fullPath: '/teacher/staff'
+      preLoaderRoute: typeof TeacherStaffRouteImport
+      parentRoute: typeof TeacherRoute
+    }
+    '/teacher/students': {
+      id: '/teacher/students'
+      path: '/students'
+      fullPath: '/teacher/students'
+      preLoaderRoute: typeof TeacherStudentsRouteImport
+      parentRoute: typeof TeacherRoute
     }
     '/student/homework/$assignmentId': {
       id: '/student/homework/$assignmentId'
